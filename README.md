@@ -13,3 +13,7 @@ add, generate, edit, show a password, search password names.
 * the gemset.nix and shell.nix are for Nix users. If you need to edit
 the Gemfile, use `bundle lock && nix run nixpkgs.bundix -c bundix` to
 regenerate gemset.nix
+
+* if you have `entr` installed, you can get fast test feedback by doing
+`find . -type f | entr cucumber --publish-quiet -i`. For Nix users,
+there is an alias `run_watch` that does this
