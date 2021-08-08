@@ -65,10 +65,14 @@ when 'edit'
     end
   end
 when 'search'
-  files = Dir[STORE.join('**/*.age')].filter {|f| f.match(Regexp.new(term)) }
   term = parameters.join(" ")
+  files = Dir[STORE.join('**/*.age')].map {|n|
+    Pathname.new(n).relative_path_from(STORE).sub_ext('').to_s
+  }.filter {|f|
+    f.match(Regexp.new(term))
+  }
   files.each do |n|
-    puts Pathname.new(n).relative_path_from(STORE).sub_ext('')
+    puts n
   end
 else
   raise "command #{action} unrecognized"
