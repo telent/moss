@@ -41,3 +41,5 @@ Feature: command-line password management
   Scenario: It encrypts to multiple recipients
 
   Scenario: Different recipients can be set per subtree
+
+  Scenario: I can list secrets
