@@ -31,8 +31,8 @@ Feature: command-line password management
   @wip
   Scenario: I can edit a secret
     Given I am using the example password store
-    When I edit work/gmail
-    Then the editor opens with a plaintext file "horsebattery"
+    When I edit "work/gmail"
+    Then the editor opens a temporary file containing "horsebattery"
 
   Scenario: Secrets are stored in a git repo
 

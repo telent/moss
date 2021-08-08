@@ -62,3 +62,17 @@ end
 When("I search for {string}") do |term|
   @i_see = shell "#{RJPASS} search #{term}"
 end
+
+When("I edit {string}") do |name|
+  ENV["EDITOR"] = "./fixtures/fakedit.sh"
+  @i_see = shell "#{RJPASS} edit #{name}"
+end
+
+Then("the editor opens a temporary file containing {string}") do |expected|
+  magic, pathname, content = @i_see.split("\0")
+  # we test for this magic string to make sure that our fake editor was
+  # invoked
+  expect(magic).to eq('fakedit-magic')
+  expect(pathname).to start_with(ENV['TMPDIR'])
+  expect(content).to eq(expected)
+end

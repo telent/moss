@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require 'pathname'
+require 'tempfile'
 
 STORE = Pathname.new(ENV['RJPASS_STORE'] || "/tmp/store")
 IDENTITY = "age1wc392uhfm04sy5nmpu86ea077ymjxs6e3gnda54jvpmuqchj9d5s6d0q2x"
@@ -49,6 +50,20 @@ when 'insert'
 when 'cat','show'
   file, = ARGV[1..]
   STDOUT.write(read_secret(file))
+when 'edit'
+  file, = ARGV[1..]
+  content = read_secret(file)
+  Tempfile.create(file.gsub(/[\W]/,"")) do |f|
+    f.write(content)
+    f.flush
+    if Kernel.system(ENV['EDITOR'], f.path)
+      f.rewind
+      secret = f.read
+      write_secret(file, secret)
+    else
+      raise "#{$!}"
+    end
+  end
 when 'search'
   term = ARGV[1..].join(" ")
   files = Dir[STORE.join('**/*.age')].filter {|f| f.match(Regexp.new(term)) }
