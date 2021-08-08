@@ -36,22 +36,22 @@ def read_secret(name)
   `age -i #{STORE.join(".age/identity")} -d #{pathname}`
 end
 
-
-case ARGV[0]
+action, *parameters = ARGV
+case action
 when 'generate'
-  file , len = ARGV[1..]
+  file , len = parameters
   secret = random_alnum(len.to_i)
   print secret
   write_secret(file, secret)
 when 'insert'
-  file, = ARGV[1..]
+  file, = parameters
   secret = STDIN.read
   write_secret(file, secret)
 when 'cat','show'
-  file, = ARGV[1..]
+  file, = parameters
   STDOUT.write(read_secret(file))
 when 'edit'
-  file, = ARGV[1..]
+  file, = parameters
   content = read_secret(file)
   Tempfile.create(file.gsub(/[\W]/,"")) do |f|
     f.write(content)
@@ -65,11 +65,11 @@ when 'edit'
     end
   end
 when 'search'
-  term = ARGV[1..].join(" ")
   files = Dir[STORE.join('**/*.age')].filter {|f| f.match(Regexp.new(term)) }
+  term = parameters.join(" ")
   files.each do |n|
     puts Pathname.new(n).relative_path_from(STORE).sub_ext('')
   end
 else
-  raise "command #{ARGV[0]} unrecognized"
+  raise "command #{action} unrecognized"
 end
