@@ -37,3 +37,7 @@ Feature: command-line password management
   Scenario: Secrets are stored in a git repo
 
   Scenario: It pushes changes to a git remote
+
+  Scenario: It encrypts to multiple recipients
+
+  Scenario: Different recipients can be set per subtree
