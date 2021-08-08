@@ -28,11 +28,11 @@ Feature: command-line password management
     Then I see the string "work/gmail"
     And I see the string "home/yahoomail"
 
-  @wip
   Scenario: I can edit a secret
-    Given I am using the example password store
+    Given I am using a temporary password store
+    When I store a secret for "work/gmail" with content "staple correct"
     When I edit "work/gmail"
-    Then the editor opens a temporary file containing "horsebattery"
+    Then the editor opens a temporary file containing "staple correct"
 
   Scenario: Secrets are stored in a git repo
 
