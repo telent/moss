@@ -96,7 +96,7 @@ When("I search for {string}") do |term|
   @i_see = shell "#{MOSS} search #{term}"
 end
 
-When("I list the secrets") do 
+When("I list the secrets") do
   @i_see = shell "#{MOSS} list"
 end
 

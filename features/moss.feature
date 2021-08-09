@@ -27,7 +27,7 @@ Feature: command-line password management
     When I list the secrets
     Then I see the string "work/gmail"
     And I see the string "home/yahoomail"
-    And I see the string "home/ebay"	
+    And I see the string "home/ebay"
 
   Scenario: I can search for a secret
     Given I am using the example password store
@@ -48,7 +48,7 @@ Feature: command-line password management
     | family    | me.key,partner.key,child.key |
     | work      | me.key,work.key |
     | private   | me.key |
-    
+
     When I store a secret for "private/medical" with content "120/70"
     Then I can decrypt it with key "me.key" to "120/70"
     And I cannot decrypt it with key "work.key"
@@ -62,18 +62,27 @@ Feature: command-line password management
     Then I can decrypt it with key "me.key" to "isle of wight"
     And I can decrypt it with key "child.key" to "isle of wight"
     And I cannot decrypt it with key "work.key"
-    
+
   Scenario: Secrets are stored in a git repo
     Given I am using a temporary password store
     And the store is version-controlled
     When I store a secret for "home/ebay" with content "horsebattery"
     Then the change to "home/ebay.age" is committed to version control
-    
+
+  Scenario: I can do git operations on the store
+    Given I am using a temporary password store
+    And the store is version-controlled
+    When I store a secret for "home/ebay" with content "horsebattery"
+    Then I can run git "config --local -l"
+    And I see the string "core.bare=false"
 
   Scenario: Sensible path to the store
     Given I do not specify a store
     Then the store directory is under XDG_DATA_HOME
-    
 
-
-
+  Scenario: I can create a new store
+    Given I am using a temporary password store
+    When I create a moss instance with identity "me.key"
+    Then the instance store exists
+    And the instance identity is "me.key"
+    And the store root contains .recipients for the identity "me.key"

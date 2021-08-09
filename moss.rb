@@ -47,7 +47,7 @@ end
 
 def find_in_subtree(subtree, filename)
   pathname = subtree.join(filename)
-  case 
+  case
   when pathname.readable?
     pathname
   when subtree.to_s >  STORE.to_s
