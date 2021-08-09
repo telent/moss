@@ -18,7 +18,7 @@ add, generate, edit, show a password, search password names.
 * the Gemfile is needed for installing Cucumber
 
 * the gemset.nix and shell.nix are for Nix users. If you need to edit
-the Gemfile, use `bundle lock && nix run nixpkgs.bundix -c bundix` to
+the Gemfile, use `nix-shell bundix --run "bundle lock && bundix"` to
 regenerate gemset.nix
 
 * if you have `entr` installed, you can get fast test feedback by doing

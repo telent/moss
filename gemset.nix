@@ -1,6 +1,6 @@
 {
   builder = {
-    groups = ["default"];
+    groups = ["default" "development" "test"];
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
@@ -9,9 +9,19 @@
     };
     version = "3.2.4";
   };
+  coderay = {
+    groups = ["default" "development" "test"];
+    platforms = [];
+    source = {
+      remotes = ["https://rubygems.org"];
+      sha256 = "0jvxqxzply1lwp7ysn94zjhh57vc14mcshw1ygw14ib8lhc00lyw";
+      type = "gem";
+    };
+    version = "1.1.3";
+  };
   cucumber = {
     dependencies = ["builder" "cucumber-core" "cucumber-create-meta" "cucumber-cucumber-expressions" "cucumber-gherkin" "cucumber-html-formatter" "cucumber-messages" "cucumber-wire" "diff-lcs" "mime-types" "multi_test" "sys-uname"];
-    groups = ["default"];
+    groups = ["development" "test"];
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
@@ -22,7 +32,7 @@
   };
   cucumber-core = {
     dependencies = ["cucumber-gherkin" "cucumber-messages" "cucumber-tag-expressions"];
-    groups = ["default"];
+    groups = ["default" "development" "test"];
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
@@ -33,7 +43,7 @@
   };
   cucumber-create-meta = {
     dependencies = ["cucumber-messages" "sys-uname"];
-    groups = ["default"];
+    groups = ["default" "development" "test"];
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
@@ -43,7 +53,7 @@
     version = "6.0.1";
   };
   cucumber-cucumber-expressions = {
-    groups = ["default"];
+    groups = ["default" "development" "test"];
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
@@ -54,7 +64,7 @@
   };
   cucumber-gherkin = {
     dependencies = ["cucumber-messages"];
-    groups = ["default"];
+    groups = ["default" "development" "test"];
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
@@ -65,7 +75,7 @@
   };
   cucumber-html-formatter = {
     dependencies = ["cucumber-messages"];
-    groups = ["default"];
+    groups = ["default" "development" "test"];
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
@@ -75,7 +85,7 @@
     version = "16.0.1";
   };
   cucumber-messages = {
-    groups = ["default"];
+    groups = ["default" "development" "test"];
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
@@ -85,7 +95,7 @@
     version = "17.0.1";
   };
   cucumber-tag-expressions = {
-    groups = ["default"];
+    groups = ["default" "development" "test"];
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
@@ -96,17 +106,17 @@
   };
   cucumber-wire = {
     dependencies = ["cucumber-core" "cucumber-cucumber-expressions" "cucumber-messages"];
-    groups = ["default"];
+    groups = ["default" "development" "test"];
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
-      sha256 = "06p66mfccak9nskwslnvkac0503q310q7n32imh9q2gknh0iliw5";
+      sha256 = "107dli2q5zvzmpkalc5npxi80jk01jgfjr1mlpaf7g6zn8pzf3gx";
       type = "gem";
     };
-    version = "6.0.1";
+    version = "6.1.0";
   };
   diff-lcs = {
-    groups = ["default"];
+    groups = ["default" "development" "test"];
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
@@ -116,7 +126,7 @@
     version = "1.4.4";
   };
   ffi = {
-    groups = ["default"];
+    groups = ["default" "development" "test"];
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
@@ -125,9 +135,19 @@
     };
     version = "1.15.3";
   };
+  method_source = {
+    groups = ["default" "development" "test"];
+    platforms = [];
+    source = {
+      remotes = ["https://rubygems.org"];
+      sha256 = "1pnyh44qycnf9mzi1j6fywd5fkskv3x7nmsqrrws0rjn5dd4ayfp";
+      type = "gem";
+    };
+    version = "1.0.0";
+  };
   mime-types = {
     dependencies = ["mime-types-data"];
-    groups = ["default"];
+    groups = ["default" "development" "test"];
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
@@ -137,7 +157,7 @@
     version = "3.3.1";
   };
   mime-types-data = {
-    groups = ["default"];
+    groups = ["default" "development" "test"];
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
@@ -147,7 +167,7 @@
     version = "3.2021.0704";
   };
   multi_test = {
-    groups = ["default"];
+    groups = ["default" "development" "test"];
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
@@ -156,9 +176,20 @@
     };
     version = "0.1.2";
   };
+  pry = {
+    dependencies = ["coderay" "method_source"];
+    groups = ["development" "test"];
+    platforms = [];
+    source = {
+      remotes = ["https://rubygems.org"];
+      sha256 = "0m445x8fwcjdyv2bc0glzss2nbm1ll51bq45knixapc7cl3dzdlr";
+      type = "gem";
+    };
+    version = "0.14.1";
+  };
   rspec = {
     dependencies = ["rspec-core" "rspec-expectations" "rspec-mocks"];
-    groups = ["default"];
+    groups = ["development" "test"];
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
@@ -169,7 +200,7 @@
   };
   rspec-core = {
     dependencies = ["rspec-support"];
-    groups = ["default"];
+    groups = ["default" "development" "test"];
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
@@ -180,7 +211,7 @@
   };
   rspec-expectations = {
     dependencies = ["diff-lcs" "rspec-support"];
-    groups = ["default"];
+    groups = ["default" "development" "test"];
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
@@ -191,7 +222,7 @@
   };
   rspec-mocks = {
     dependencies = ["diff-lcs" "rspec-support"];
-    groups = ["default"];
+    groups = ["default" "development" "test"];
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
@@ -201,7 +232,7 @@
     version = "3.10.2";
   };
   rspec-support = {
-    groups = ["default"];
+    groups = ["default" "development" "test"];
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
@@ -212,7 +243,7 @@
   };
   sys-uname = {
     dependencies = ["ffi"];
-    groups = ["default"];
+    groups = ["default" "development" "test"];
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
