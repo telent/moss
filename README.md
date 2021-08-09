@@ -18,7 +18,7 @@ add, generate, edit, show a password, search password names.
 * the Gemfile is needed for installing Cucumber
 
 * the gemset.nix and shell.nix are for Nix users. If you need to edit
-the Gemfile, use `nix-shell bundix --run "bundle lock && bundix"` to
+the Gemfile, use `nix-shell -p bundix --run "bundle lock && bundix"` to
 regenerate gemset.nix
 
 * if you have `entr` installed, you can get fast test feedback by doing
@@ -32,4 +32,4 @@ I don't suggest you do this, at least until moss is a bit more mature.  I am
 only writing this down because I figured out how to
 
     cd $HOME/.password-store
-    for i in `find * -name \*.gpg`   ;do ( gpg -d $i | ~/src/moss/moss.rb add "${i%.*}" );done  
+    for i in `find * -name \*.gpg`   ;do ( gpg -d $i | ~/src/moss/moss.rb add "${i%.*}" );done
