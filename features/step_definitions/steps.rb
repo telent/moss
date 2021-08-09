@@ -143,4 +143,24 @@ Then("the store directory is under XDG_DATA_HOME") do
   store = result["store"]
   expect(store).to start_with(ENV["XDG_DATA_HOME"])
 end
-  
+
+When("I create a moss instance with identity {string}") do |keyfile|
+  shell "#{MOSS} init fixtures/keys/#{keyfile}"
+end
+
+Then("the instance store exists") do
+  expect(Pathname.new(ENV['MOSS_STORE'])).to be_directory
+end
+
+Then("the instance identity is {string}") do |keyfile|
+  expect(store_path("../identity").read).to eq File.read("fixtures/keys/#{keyfile}")
+end
+
+Then("the store root contains .recipients for the identity {string}") do |keyfile|
+  expected = `age-keygen -y fixtures/keys/#{keyfile.inspect}`
+  expect(store_path(".recipients").read).to eq expected
+end
+
+Then("I can run git {string}") do |command|
+  @i_see = shell "#{MOSS} git #{command}"
+end

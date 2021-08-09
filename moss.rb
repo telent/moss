@@ -8,10 +8,13 @@ def xdg_data_home
 end
 
 STORE = Pathname.new(ENV['MOSS_STORE'] || "#{xdg_data_home}/moss/store")
-IDENTITY_FILE = ENV.fetch('MOSS_IDENTITY_FILE',  "#{xdg_data_home}/moss/identity")
 
-File.exist?(IDENTITY_FILE) or
-  raise "missing identity file (private key) at #{IDENTITY_FILE}, use age-keygen to create"
+def identity_file
+  value = ENV.fetch('MOSS_IDENTITY_FILE',  "#{xdg_data_home}/moss/identity")
+  File.exist?(value) or
+    raise "missing identity file (private key) at #{IDENTITY_FILE}, use age-keygen to create"
+  value
+end
 
 def git_managed?
   STORE.join(".git").exist?
@@ -66,7 +69,7 @@ end
 def read_secret(name)
   pathname = STORE.join("#{name}.age")
   File.exist?(pathname) or raise "Can't open #{pathname}: $!"
-  `age -i #{IDENTITY_FILE} -d #{pathname}`
+  `age -i #{identity_file} -d #{pathname}`
 end
 
 action, *parameters = ARGV
@@ -110,10 +113,23 @@ when 'search','list'
 when 'config'
   config = {
     store: STORE.to_s,
-    identity_file: IDENTITY_FILE.to_s,
+    identity_file: identity_file.to_s,
     git: git_managed?
   }
   puts JSON.generate(config)
+when 'init'
+  keyfile = Pathname.new(parameters.first)
+  keyfile.exist? or raise "Cannot read identity at #{keyfile}"
+  keyfile.read.match(/AGE-SECRET-KEY-1/) or
+    raise "#{keyfile} does not appear to be an age identity"
+  STORE.mkpath
+  FileUtils.cp(keyfile,  STORE.parent.join("identity"))
+  File.open(STORE.join(".recipients"), "w") do |f|
+    f.write `age-keygen -y #{keyfile.to_s.inspect}`
+  end
+when 'git'
+  Kernel.system("/usr/bin/env", "git", *parameters, {chdir: STORE})
+
 else
   raise "command #{action} unrecognized"
 end
