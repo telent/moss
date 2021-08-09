@@ -1,14 +1,12 @@
-MOSS - command-line password manager using age-encryption
+MOSS - command-line password manager using age
 
-* PGP is "Pretty Good Privacy"
-* AGE is "Actually Good Encryption"
-* MOSS is the "Maybe OK Secret Store"
-
-Yes, it's yet another pass-like program using age instead of GPG,
-because it seemed like less effort to write one than to understand the
-uses and limitations of anyone else's. I am not a security
-professional, so the best offer I can make for its abilities is that
-it *may* be OK
+Yes, it's yet another [pass](https://www.passwordstore.org/pass)-like
+program that uses [age](https://github.com/FiloSottile/age) instead of
+GPG, because it seemed like less effort to write one than to
+understand the uses and limitations of anyone else's. I am not a
+security professional, so the best offer I can make for its abilities
+is that it *may* be OK. Hence the name "Maybe OK Secret Store"; c.f.
+"Pretty Good Privacy", "Actually Good Encryption"
 
 ## Installation
 
@@ -65,9 +63,9 @@ creating `.recipients` files in those subtrees. The recipients file in
 a subdirectory *overrides* the recipients in a parent directory - it
 is not additive
 
-* you can run Git commands on the store using `moss git` - so use
-e.g. `moss git push origin` to push to a previously configured git
-remote
+* you can run [Git](https://git-scm.com/) commands on the store using
+`moss git` - so use e.g. `moss git push origin` to push to a
+previously configured git remote
 
 To find your store directory, run `moss config`
 
@@ -77,7 +75,8 @@ To find your store directory, run `moss config`
 ### Prerequisites
 
 moss is written in Ruby using only the standard library (no gems).
-The test suite requires Cucumber and Rspec.
+The test suite requires
+[Cucumber](https://cucumber.io/docs/installation/ruby/) and [Rspec](https://rspec.info/).
 
 On Nix, run `nix-shell` to download everything you need.  On other
 Unixlikes, you will need to install Ruby and run `bundle install` to
@@ -86,10 +85,10 @@ get cucumber and rspec gems
 
 ### Running tests
 
-The scenarios in `features/moss.feature` should illustrate what it
-does: add, generate, edit, show a password, search password names,
-etc.  Run `cucumber`, or if you have `entr` installed, you can use it
-to rerun tests whenever something changes.
+The scenarios in [features/moss.feature](features/moss.feature) should
+illustrate what it does: add, generate, edit, show a password, search
+password names, etc.  Run `cucumber`, or if you have `entr` installed,
+you can use it to rerun tests whenever something changes.
 
     make watch
 
