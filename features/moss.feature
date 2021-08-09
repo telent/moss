@@ -41,12 +41,31 @@ Feature: command-line password management
     When I edit "work/gmail"
     Then the editor opens a temporary file containing "staple correct"
 
+  Scenario Outline: It encrypts to multiple recipients
+    Given I am using a temporary password store
+    And there are recipient files in different subtrees
+    | pathname  | identity |
+    | family    | me.key,partner.key,child.key |
+    | work      | me.key,work.key |
+    | private   | me.key |
+    
+    When I store a secret for "private/medical" with content "120/70"
+    Then I can decrypt it with key "me.key" to "120/70"
+    And I cannot decrypt it with key "work.key"
+
+    When I store a secret for "work/report" with content "persevere"
+    Then I can decrypt it with key "me.key" to "persevere"
+    And I can decrypt it with key "work.key" to "persevere"
+    And I cannot decrypt it with key "child.key"
+
+    When I store a secret for "family/holiday" with content "isle of wight"
+    Then I can decrypt it with key "me.key" to "isle of wight"
+    And I can decrypt it with key "child.key" to "isle of wight"
+    And I cannot decrypt it with key "work.key"
+    
   Scenario: Secrets are stored in a git repo
 
   Scenario: It pushes changes to a git remote
 
-  Scenario: It encrypts to multiple recipients
-
-  Scenario: Different recipients can be set per subtree
 
 
