@@ -10,11 +10,13 @@ is that it *may* be OK. Hence the name "Maybe OK Secret Store"; c.f.
 
 ## Installation
 
-`moss.rb` is a standalone Ruby file. You can `make install` or just copy it to somewhere on your PATH
+    make install               # defaults to /usr/local/bin
 
-Or if you are a Nix user, you can run
+or
 
-    nix-env -i -f release.nix
+    nix-env -i -f release.nix  # for Nix users
+
+`moss.rb` is a standalone Ruby file, so if neither of these approaches fits your needs, you could just copy it to anywhere on your search path
 
 ## Setup
 
@@ -53,10 +55,12 @@ commit the new or changed secret to version control
 ## Sharing the secret store
 
 By default, moss will encrypt secrets using the public key associated
-with the identity you supply.
+with the identity you supplied when you ran `moss init`
 
-* You can change this, or add keys, by editing the `.recipients` file
-in the store directory
+* You can change the key, or add keys, by editing the `.recipients`
+file in the store directory. This is an age recipient file, so may
+contain "one or more recipients, one per line. Empty lines and lines
+starting with "#" are ignored as comments."
 
 * You can have different keys in different subtrees of the store by
 creating `.recipients` files in those subtrees. The recipients file in
@@ -103,3 +107,11 @@ only writing this down because I figured out how to
 
     cd $HOME/.password-store
     for i in `find * -name \*.gpg`   ;do ( gpg -d $i | ~/src/moss/moss.rb add "${i%.*}" );done
+
+## TO DO
+
+* remove secrets
+* copy to clipboard
+* check before overwriting secrets that exist already
+* support re-encrypting a subtree when recipients change
+* --help option
