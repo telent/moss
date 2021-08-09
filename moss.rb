@@ -2,7 +2,7 @@
 require 'pathname'
 require 'tempfile'
 
-STORE = Pathname.new(ENV['RJPASS_STORE'] || "/tmp/store")
+STORE = Pathname.new(ENV['MOSS_STORE'] || "/tmp/store")
 IDENTITY = "age1wc392uhfm04sy5nmpu86ea077ymjxs6e3gnda54jvpmuqchj9d5s6d0q2x"
 
 def random_alnum(length)

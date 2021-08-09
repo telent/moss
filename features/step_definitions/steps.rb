@@ -1,4 +1,4 @@
-RJPASS="./rjpass.rb"
+MOSS="./moss.rb"
 
 require 'tmpdir'
 require 'fileutils'
@@ -10,25 +10,25 @@ def shell(s)
 end
 
 def store_path(s)
-  Pathname.new(ENV["RJPASS_STORE"]).join(s)
+  Pathname.new(ENV["MOSS_STORE"]).join(s)
 end
 
 Given("I am using a temporary password store") do
-  ENV["RJPASS_STORE"] = Dir.mktmpdir
+  ENV["MOSS_STORE"] = Dir.mktmpdir
   Dir.mkdir(store_path(".age"))
   FileUtils.cp("fixtures/store/.age/identity", store_path(".age/identity"))
 end
 
 Given("I am using the example password store") do
-  ENV["RJPASS_STORE"] = "fixtures/store"
+  ENV["MOSS_STORE"] = "fixtures/store"
 end
 
 When("I generate a secret for {string} with length {int}") do |name,  length|
-  @i_see = shell "#{RJPASS} generate #{name} #{length}"
+  @i_see = shell "#{MOSS} generate #{name} #{length}"
 end
 
 When("I store a secret for {string} with content {string}") do |name, content|
-  shell "echo -n #{content} | #{RJPASS} insert #{name}"
+  shell "echo -n #{content} | #{MOSS} insert #{name}"
 end
 
 Then("I see a {int} character string") do |len|
@@ -56,16 +56,16 @@ Then("{string} plaintext matches {word}") do |name, re|
 end
 
 When("I view the secret {string}") do |name|
-  @i_see = shell "#{RJPASS} cat #{name}"
+  @i_see = shell "#{MOSS} cat #{name}"
 end
 
 When("I search for {string}") do |term|
-  @i_see = shell "#{RJPASS} search #{term}"
+  @i_see = shell "#{MOSS} search #{term}"
 end
 
 When("I edit {string}") do |name|
   ENV["EDITOR"] = "./fixtures/fakedit.sh"
-  @i_see = shell "#{RJPASS} edit #{name}"
+  @i_see = shell "#{MOSS} edit #{name}"
 end
 
 Then("the editor opens a temporary file containing {string}") do |expected|

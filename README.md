@@ -1,11 +1,18 @@
+MOSS - command-line password manager using age-encryption
+
+* PGP is "Pretty Good Privacy"
+* AGE is "Actuallty Good Encryption"
+* MOSS is the Maybe OK Secret Store
 
 Yes, it's yet another pass-like program using age instead of GPG,
 because it seemed like less effort to write one than to understand the
-uses and limitations of anyone else's
+uses and limitations of anyone else's. I am not a security
+professional, so the best offer I can make for its abilities is that
+it *may* be OK
 
-* rjpass.rb is a standalone Ruby file that uses nothing but stdlib
+* moss.rb is a standalone Ruby file that uses nothing but stdlib
 
-* The scenarios in features/rjpass.feature should illustrate what it does:
+* The scenarios in features/moss.feature should illustrate what it does:
 add, generate, edit, show a password, search password names.
 
 * the Gemfile is needed for installing Cucumber
