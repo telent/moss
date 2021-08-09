@@ -1,8 +1,8 @@
 MOSS - command-line password manager using age-encryption
 
 * PGP is "Pretty Good Privacy"
-* AGE is "Actuallty Good Encryption"
-* MOSS is the Maybe OK Secret Store
+* AGE is "Actually Good Encryption"
+* MOSS is the "Maybe OK Secret Store"
 
 Yes, it's yet another pass-like program using age instead of GPG,
 because it seemed like less effort to write one than to understand the
