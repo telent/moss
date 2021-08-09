@@ -64,7 +64,7 @@ when 'edit'
       raise "#{$!}"
     end
   end
-when 'search'
+when 'search','list'
   term = parameters.join(" ")
   files = Dir[STORE.join('**/*.age')].map {|n|
     Pathname.new(n).relative_path_from(STORE).sub_ext('').to_s

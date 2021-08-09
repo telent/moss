@@ -22,6 +22,13 @@ Feature: command-line password management
     When I view the secret "home/ebay"
     Then I see the string "horsebattery"
 
+  Scenario: I can list secrets
+    Given I am using the example password store
+    When I list the secrets
+    Then I see the string "work/gmail"
+    And I see the string "home/yahoomail"
+    And I see the string "home/ebay"	
+
   Scenario: I can search for a secret
     Given I am using the example password store
     When I search for "mail"
@@ -42,4 +49,4 @@ Feature: command-line password management
 
   Scenario: Different recipients can be set per subtree
 
-  Scenario: I can list secrets
+

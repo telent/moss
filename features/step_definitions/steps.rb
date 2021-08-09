@@ -63,6 +63,10 @@ When("I search for {string}") do |term|
   @i_see = shell "#{MOSS} search #{term}"
 end
 
+When("I list the secrets") do 
+  @i_see = shell "#{MOSS} list"
+end
+
 When("I edit {string}") do |name|
   ENV["EDITOR"] = "./fixtures/fakedit.sh"
   @i_see = shell "#{MOSS} edit #{name}"
