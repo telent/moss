@@ -6,6 +6,10 @@ require 'tempfile'
 STORE = Pathname.new(ENV['MOSS_STORE'] || "/tmp/store").realpath
 IDENTITY_FILE = ENV['MOSS_IDENTITY_FILE']
 
+def git_managed?
+  STORE.join(".git").exist?
+end
+
 def random_alnum(length)
   bytes = File.open("/dev/urandom", "rb") do |random|
     random.read(length).unpack("C*").map {|c|
@@ -28,6 +32,9 @@ def write_secret(name, content)
   pathname.dirname.mkpath
   IO.popen("age -a --recipients-file #{recipients_for_secret(name)} -o #{pathname.to_s}", "w") do |f|
     f.write(content)
+  end
+  if git_managed?
+    Kernel.system("cd #{STORE.to_s} && git add #{pathname.relative_path_from(STORE).to_s.inspect} && git commit -m'new secret'")
   end
 end
 

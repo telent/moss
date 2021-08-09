@@ -64,6 +64,11 @@ Feature: command-line password management
     And I cannot decrypt it with key "work.key"
     
   Scenario: Secrets are stored in a git repo
+    Given I am using a temporary password store
+    And the store is version-controlled
+    When I store a secret for "home/ebay" with content "horsebattery"
+    Then the change to "home/ebay.age" is committed to version control
+    
 
   Scenario: It pushes changes to a git remote
 

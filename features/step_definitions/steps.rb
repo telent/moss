@@ -123,3 +123,12 @@ Given("there are recipient files in different subtrees") do |table|
     add_to_store("#{row['pathname']}/.recipients", recipients)
   end
 end
+
+Given("the store is version-controlled") do
+  shell "cd #{ENV["MOSS_STORE"]} && git init --initial-branch=main"
+end
+
+Then("the change to {string} is committed to version control") do |name|
+  log = shell "cd #{ENV["MOSS_STORE"]} && git log #{name}"
+  expect(log).to match /new secret/
+end
