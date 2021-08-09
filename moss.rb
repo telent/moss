@@ -62,7 +62,7 @@ when 'generate'
   secret = random_alnum(len.to_i)
   print secret
   write_secret(file, secret)
-when 'insert'
+when 'insert','add'
   file, = parameters
   secret = STDIN.read
   write_secret(file, secret)
