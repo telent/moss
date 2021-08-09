@@ -70,7 +70,10 @@ Feature: command-line password management
     Then the change to "home/ebay.age" is committed to version control
     
 
-  Scenario: It pushes changes to a git remote
+  Scenario: Sensible path to the store
+    Given I do not specify a store
+    Then the store directory is under XDG_DATA_HOME
+    
 
 
 

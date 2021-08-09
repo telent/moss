@@ -1,10 +1,17 @@
 #!/usr/bin/env ruby
 require 'pathname'
 require 'tempfile'
+require 'json'
 
+def xdg_data_home
+  ENV.fetch("XDG_DATA_HOME", "#{ENV['HOME']}/.local/share")
+end
 
-STORE = Pathname.new(ENV['MOSS_STORE'] || "/tmp/store").realpath
-IDENTITY_FILE = ENV['MOSS_IDENTITY_FILE']
+STORE = Pathname.new(ENV['MOSS_STORE'] || "#{xdg_data_home}/moss/store")
+IDENTITY_FILE = ENV.fetch('MOSS_IDENTITY_FILE',  "#{xdg_data_home}/moss/identity")
+
+File.exist?(IDENTITY_FILE) or
+  raise "missing identity file (private key) at #{IDENTITY_FILE}, use age-keygen to create"
 
 def git_managed?
   STORE.join(".git").exist?
@@ -100,6 +107,13 @@ when 'search','list'
   files.each do |n|
     puts n
   end
+when 'config'
+  config = {
+    store: STORE.to_s,
+    identity_file: IDENTITY_FILE.to_s,
+    git: git_managed?
+  }
+  puts JSON.generate(config)
 else
   raise "command #{action} unrecognized"
 end

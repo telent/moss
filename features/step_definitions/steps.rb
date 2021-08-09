@@ -132,3 +132,15 @@ Then("the change to {string} is committed to version control") do |name|
   log = shell "cd #{ENV["MOSS_STORE"]} && git log #{name}"
   expect(log).to match /new secret/
 end
+
+Given("I do not specify a store") do
+  ENV.delete('MOSS_STORE')
+end
+
+Then("the store directory is under XDG_DATA_HOME") do
+  ENV["XDG_DATA_HOME"] = "/tmp/#{6.times.map { rand(36).to_s(36) }.join}"
+  result = JSON.load(shell "#{MOSS} config")
+  store = result["store"]
+  expect(store).to start_with(ENV["XDG_DATA_HOME"])
+end
+  
