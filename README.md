@@ -10,20 +10,34 @@ uses and limitations of anyone else's. I am not a security
 professional, so the best offer I can make for its abilities is that
 it *may* be OK
 
-* moss.rb is a standalone Ruby file that uses nothing but stdlib
+## Installation
 
-* The scenarios in features/moss.feature should illustrate what it does:
-add, generate, edit, show a password, search password names.
+`moss.rb` is a standalone Ruby file. You can `make install` or just copy it to somewhere on your PATH
 
-* the Gemfile is needed for installing Cucumber
+Or if you are a Nix user, you can run
 
-* the gemset.nix and shell.nix are for Nix users. If you need to edit
-the Gemfile, use `nix-shell -p bundix --run "bundle lock && bundix"` to
-regenerate gemset.nix
+    nix-env -i -f release.nix
 
-* if you have `entr` installed, you can get fast test feedback by doing
-`find . -type f | entr cucumber --publish-quiet -i`. For Nix users,
-there is an alias `run_watch` that does this
+## Development
+
+### Prerequisites
+
+On Nix, run `nix-shell`
+
+On other Unixlikes, you will need to install Ruby and run `bundle
+install` to get cucumber and rspec
+
+### Running tests
+
+The scenarios in `features/moss.feature` should illustrate what it
+does: add, generate, edit, show a password, search password names.
+Run `cucumber`, or if you have `entr` installed, you can use it to
+rerun tests whenever something changes.
+
+    make watch
+
+If you need to edit the Gemfile, use `make gemset.nix` to regenerate
+`gemset.nix`
 
 
 ## Converting from pass

@@ -10,9 +10,4 @@ in mkShell {
     gems gems.wrappedRuby
     bundix age pkgs.entr
   ];
-  shellHook = ''
-    run_watch() {
-      find . -type f | entr cucumber --publish-quiet -i;
-    }
-  '';
 }

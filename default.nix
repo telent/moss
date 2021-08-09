@@ -3,10 +3,9 @@
 let age =  callPackage ./age.nix {};
 in stdenv.mkDerivation {
   name = "moss";
+  src = ./.;
   buildInputs = [ age ];
-  phases = ["installPhase"];
   installPhase = ''
-    mkdir -p $out/bin
-    cp ${./moss.rb} $out/bin/moss
+    make install prefix=$out
   '';
 }
