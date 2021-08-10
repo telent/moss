@@ -31,6 +31,12 @@ class Moss
     store.join(".git").exist?
   end
 
+  private def recipients_for_secret(name)
+    pathname = store.join("#{name}.age")
+    find_in_subtree(pathname.parent, ".recipients") or
+      raise "Can't find .recipients for #{name}"
+  end
+
   def write_secret(name, content)
     pathname = store.join("#{name}.age")
     pathname.dirname.mkpath
@@ -41,6 +47,13 @@ class Moss
       Kernel.system("cd #{STORE.to_s} && git add #{pathname.relative_path_from(STORE).to_s.inspect} && git commit -m'new secret'")
     end
   end
+
+  def read_secret(name)
+    pathname = store.join("#{name}.age")
+    File.exist?(pathname) or raise "Can't open #{pathname}: $!"
+    `age -i #{identity_file} -d #{pathname}`
+  end
+
 end
 
 MOSS = Moss.new(STORE.parent)
@@ -78,16 +91,8 @@ def find_in_subtree(subtree, filename)
   end
 end
 
-def recipients_for_secret(name)
-  pathname = STORE.join("#{name}.age")
-  find_in_subtree(pathname.parent, ".recipients") or
-    raise "Can't find .recipients for #{name}"
-end
-
 def read_secret(name)
-  pathname = STORE.join("#{name}.age")
-  File.exist?(pathname) or raise "Can't open #{pathname}: $!"
-  `age -i #{identity_file} -d #{pathname}`
+  MOSS.read_secret(name)
 end
 
 action, *parameters = ARGV
