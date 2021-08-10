@@ -68,6 +68,14 @@ class Moss
     File.exist?(pathname) or raise "Can't open #{pathname}: $!"
     `age -i #{identity_file} -d #{pathname}`
   end
+
+  def config
+    {
+      store: store.to_s,
+      identity_file: identity_file.to_s,
+      git: git_managed?
+    }
+  end
 end
 
 MOSS = Moss.new(STORE.parent)
@@ -141,12 +149,7 @@ when 'search','list'
     puts n
   end
 when 'config'
-  config = {
-    store: STORE.to_s,
-    identity_file: identity_file.to_s,
-    git: MOSS.git_managed?
-  }
-  puts JSON.generate(config)
+  puts JSON.generate(MOSS.config)
 when 'init'
   keyfile = Pathname.new(parameters.first)
   MOSS.create(keyfile)
