@@ -25,13 +25,24 @@ def add_to_store(path, content)
 end
 
 def recipient_for_identity(identity_file)
-  File.open(identity_file).read.match(/(age1.+)$/).captures.first
+  File.open(identity_file).read.match(/(age1.+)$/).captures.first or
+    raise "can't get pubkey for identity #{identity_file}"
 end
 
 
-Given("I am using a temporary password store") do
+
+Given("I have the identity {string}") do |keyfile|
+  @identity_path = "fixtures/keys/#{keyfile}"
+end
+
+Given("I set MOSS_STORE to a unique temporary pathname") do
   ENV["MOSS_STORE"] = Dir.mktmpdir + "/store"
-  add_to_store(".recipients", recipient_for_identity("fixtures/keys/me.key"))
+end
+
+Given("I am using a temporary password store") do
+  @identity_path ||= "fixtures/keys/me.key"
+  ENV["MOSS_STORE"] = Dir.mktmpdir + "/store"
+  add_to_store(".recipients", recipient_for_identity(@identity_path))
 end
 
 Given("I am using the example password store") do
@@ -148,6 +159,10 @@ When("I create a moss instance with identity {string}") do |keyfile|
   shell "#{MOSS} init fixtures/keys/#{keyfile}"
 end
 
+When("I interactively create a moss instance with identity {string} and passphrase {string}") do |keyfile, passphrase|
+  shell "expect moss-init-with-passphrase.expect fixtures/keys/#{keyfile} #{passphrase.inspect}"
+end
+
 Then("the instance store exists") do
   expect(Pathname.new(ENV['MOSS_STORE'])).to be_directory
 end
@@ -156,9 +171,13 @@ Then("the instance identity is {string}") do |keyfile|
   expect(store_path("../identity").read).to eq File.read("fixtures/keys/#{keyfile}")
 end
 
-Then("the store root contains .recipients for the identity {string}") do |keyfile|
+Then("the store root has .recipients for the identity {string}") do |keyfile|
   expected = `age-keygen -y fixtures/keys/#{keyfile.inspect}`
   expect(store_path(".recipients").read).to eq expected
+end
+
+Then("the store root has recipient {string}") do |recipient|
+  expect(store_path(".recipients").read).to match recipient
 end
 
 Then("I can run git {string}") do |command|

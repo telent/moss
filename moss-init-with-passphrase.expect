@@ -1,0 +1,9 @@
+set keyfile [lindex $argv 0]
+set phrase [lindex $argv 1]
+spawn ./moss.rb init ${keyfile}
+expect passphrase
+send "${phrase}\r"
+interact
+catch wait result
+set STATUS [ lindex $result 3 ]
+exit $STATUS

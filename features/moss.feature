@@ -85,4 +85,11 @@ Feature: command-line password management
     When I create a moss instance with identity "me.key"
     Then the instance store exists
     And the instance identity is "me.key"
-    And the store root contains .recipients for the identity "me.key"
+    And the store root has .recipients for the identity "me.key"
+
+  Scenario: I can create a new store with an encrypted key
+    Given I set MOSS_STORE to a unique temporary pathname
+    When I interactively create a moss instance with identity "encrypted.key" and passphrase "hello foo"
+    Then the instance store exists
+    And the instance identity is "encrypted.key"
+    And the store root has recipient "age1qqawnse9rfxjun2xmklk3r2pudlfjx0z4utjuwlmq7t9l60z9e2sap9vc8"

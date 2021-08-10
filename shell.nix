@@ -8,6 +8,7 @@ let gems = bundlerEnv {
 in mkShell {
   packages = [
     gems gems.wrappedRuby
+    pkgs.expect
     bundix age pkgs.entr
   ];
 }

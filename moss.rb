@@ -30,14 +30,34 @@ class Moss
   # named. "initialize" would be a good name if it weren't special to
   # Ruby
 
+  def encrypted?(filename)
+    magic = "age-encryption.org/v1"
+    File.read(filename, magic.length) == magic
+  end
+
+  def pubkey_for_identity(filename)
+    pubkey =
+      if encrypted?(filename)
+        IO.popen("set -o pipefail; #{AGE} -d #{filename} | #{AGE_KEYGEN} -y -") {|f|
+          f.read
+        }
+      else
+        IO.popen("#{AGE_KEYGEN} -y #{filename}") { |f| f.read }
+      end
+    if $?.exitstatus.zero?
+      pubkey
+    else
+      raise "can't get public key from identity #{filename}"
+    end
+  end
+
   def create(keyfile)
     keyfile.exist? or raise "Cannot read identity at #{keyfile}"
-    keyfile.read.match(/AGE-SECRET-KEY-1/) or
-      raise "#{keyfile} does not appear to be an age identity"
+    recipient = pubkey_for_identity(keyfile)
     store.mkpath
     FileUtils.cp(keyfile,  store.parent.join("identity"))
     File.open(store.join(".recipients"), "w") do |f|
-      f.write `#{AGE_KEYGEN} -y #{keyfile.to_s.inspect}`
+      f.write recipient
     end
   end
 
