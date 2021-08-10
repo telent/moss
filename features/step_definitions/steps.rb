@@ -30,7 +30,7 @@ end
 
 
 Given("I am using a temporary password store") do
-  ENV["MOSS_STORE"] = Dir.mktmpdir
+  ENV["MOSS_STORE"] = Dir.mktmpdir + "/store"
   add_to_store(".recipients", recipient_for_identity("fixtures/keys/me.key"))
 end
 

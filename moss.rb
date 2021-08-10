@@ -16,9 +16,34 @@ def identity_file
   value
 end
 
-def git_managed?
-  STORE.join(".git").exist?
+class Moss
+  attr_reader :root
+  
+  def initialize(root)
+    @root = Pathname.new(root)
+  end
+
+  def store
+    root.join("store")
+  end
+
+  def git_managed?
+    store.join(".git").exist?
+  end
+
+  def write_secret(name, content)
+    pathname = store.join("#{name}.age")
+    pathname.dirname.mkpath
+    IO.popen("age -a --recipients-file #{recipients_for_secret(name)} -o #{pathname.to_s}", "w") do |f|
+      f.write(content)
+    end
+    if git_managed?
+      Kernel.system("cd #{STORE.to_s} && git add #{pathname.relative_path_from(STORE).to_s.inspect} && git commit -m'new secret'")
+    end
+  end
 end
+
+MOSS = Moss.new(STORE.parent)
 
 def random_alnum(length)
   bytes = File.open("/dev/urandom", "rb") do |random|
@@ -38,14 +63,7 @@ def random_alnum(length)
 end
 
 def write_secret(name, content)
-  pathname = STORE.join("#{name}.age")
-  pathname.dirname.mkpath
-  IO.popen("age -a --recipients-file #{recipients_for_secret(name)} -o #{pathname.to_s}", "w") do |f|
-    f.write(content)
-  end
-  if git_managed?
-    Kernel.system("cd #{STORE.to_s} && git add #{pathname.relative_path_from(STORE).to_s.inspect} && git commit -m'new secret'")
-  end
+  MOSS.write_secret(name, content)
 end
 
 def find_in_subtree(subtree, filename)
@@ -114,7 +132,7 @@ when 'config'
   config = {
     store: STORE.to_s,
     identity_file: identity_file.to_s,
-    git: git_managed?
+    git: MOSS.git_managed?
   }
   puts JSON.generate(config)
 when 'init'
@@ -129,7 +147,6 @@ when 'init'
   end
 when 'git'
   Kernel.system("/usr/bin/env", "git", *parameters, {chdir: STORE})
-
 else
   raise "command #{action} unrecognized"
 end
