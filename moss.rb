@@ -53,7 +53,6 @@ class Moss
     File.exist?(pathname) or raise "Can't open #{pathname}: $!"
     `age -i #{identity_file} -d #{pathname}`
   end
-
 end
 
 MOSS = Moss.new(STORE.parent)
@@ -75,9 +74,6 @@ def random_alnum(length)
   bytes.pack("C*")
 end
 
-def write_secret(name, content)
-  MOSS.write_secret(name, content)
-end
 
 def find_in_subtree(subtree, filename)
   pathname = subtree.join(filename)
@@ -91,34 +87,30 @@ def find_in_subtree(subtree, filename)
   end
 end
 
-def read_secret(name)
-  MOSS.read_secret(name)
-end
-
 action, *parameters = ARGV
 case action
 when 'generate'
   file , len = parameters
   secret = random_alnum(len.to_i)
   print secret
-  write_secret(file, secret)
+  MOSS.write_secret(file, secret)
 when 'insert','add'
   file, = parameters
   secret = STDIN.read
-  write_secret(file, secret)
+  MOSS.write_secret(file, secret)
 when 'cat','show'
   file, = parameters
-  STDOUT.write(read_secret(file))
+  STDOUT.write(MOSS.read_secret(file))
 when 'edit'
   file, = parameters
-  content = read_secret(file)
+  content = MOSS.read_secret(file)
   Tempfile.create(file.gsub(/[\W]/,"")) do |f|
     f.write(content)
     f.flush
     if Kernel.system(ENV['EDITOR'], f.path)
       f.rewind
       secret = f.read
-      write_secret(file, secret)
+      MOSS.write_secret(file, secret)
     else
       raise "#{$!}"
     end
