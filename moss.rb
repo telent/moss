@@ -23,6 +23,21 @@ class Moss
     @root = Pathname.new(root)
   end
 
+  # This is the method that "moss init" calls, which could be better
+  # named. "initialize" would be a good name if it weren't special to
+  # Ruby
+
+  def create(keyfile)
+    keyfile.exist? or raise "Cannot read identity at #{keyfile}"
+    keyfile.read.match(/AGE-SECRET-KEY-1/) or
+      raise "#{keyfile} does not appear to be an age identity"
+    store.mkpath
+    FileUtils.cp(keyfile,  STORE.parent.join("identity"))
+    File.open(STORE.join(".recipients"), "w") do |f|
+      f.write `age-keygen -y #{keyfile.to_s.inspect}`
+    end
+  end
+  
   def store
     root.join("store")
   end
@@ -134,14 +149,7 @@ when 'config'
   puts JSON.generate(config)
 when 'init'
   keyfile = Pathname.new(parameters.first)
-  keyfile.exist? or raise "Cannot read identity at #{keyfile}"
-  keyfile.read.match(/AGE-SECRET-KEY-1/) or
-    raise "#{keyfile} does not appear to be an age identity"
-  STORE.mkpath
-  FileUtils.cp(keyfile,  STORE.parent.join("identity"))
-  File.open(STORE.join(".recipients"), "w") do |f|
-    f.write `age-keygen -y #{keyfile.to_s.inspect}`
-  end
+  MOSS.create(keyfile)
 when 'git'
   Kernel.system("/usr/bin/env", "git", *parameters, {chdir: STORE})
 else
