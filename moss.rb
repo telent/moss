@@ -81,6 +81,12 @@ class Moss
     `age -i #{identity_file} -d #{pathname}`
   end
 
+  def secrets
+    Dir[store.join('**/*.age')].map {|n|
+      Pathname.new(n).relative_path_from(store).sub_ext('').to_s
+    }
+  end
+
   def config
     {
       store: store.to_s,
@@ -140,9 +146,7 @@ when 'edit'
   end
 when 'search','list'
   term = parameters.join(" ")
-  files = Dir[STORE.join('**/*.age')].map {|n|
-    Pathname.new(n).relative_path_from(STORE).sub_ext('').to_s
-  }.filter {|f|
+  files = MOSS.secrets.filter {|f|
     f.match(Regexp.new(term))
   }
   files.each do |n|
