@@ -3,6 +3,11 @@ require 'pathname'
 require 'tempfile'
 require 'json'
 
+# don't change these lines without changing the sed commands in Makefile
+AGE='age'
+AGE_KEYGEN='age-keygen'
+GIT='git'
+
 def xdg_data_home
   ENV.fetch("XDG_DATA_HOME", "#{ENV['HOME']}/.local/share")
 end
@@ -32,7 +37,7 @@ class Moss
     store.mkpath
     FileUtils.cp(keyfile,  store.parent.join("identity"))
     File.open(store.join(".recipients"), "w") do |f|
-      f.write `age-keygen -y #{keyfile.to_s.inspect}`
+      f.write `#{AGE_KEYGEN} -y #{keyfile.to_s.inspect}`
     end
   end
   
@@ -65,7 +70,7 @@ class Moss
   def write_secret(name, content)
     pathname = store.join("#{name}.age")
     pathname.dirname.mkpath
-    IO.popen("age -a --recipients-file #{recipients_for_secret(name)} -o #{pathname.to_s}", "w") do |f|
+    IO.popen("#{AGE} -a --recipients-file #{recipients_for_secret(name)} -o #{pathname.to_s}", "w") do |f|
       f.write(content)
     end
     if git_managed?
@@ -76,7 +81,7 @@ class Moss
   def read_secret(name)
     pathname = store.join("#{name}.age")
     File.exist?(pathname) or raise "Can't open #{pathname}: $!"
-    `age -i #{identity_file} -d #{pathname}`
+    `#{AGE} -i #{identity_file} -d #{pathname}`
   end
 
   def secrets
@@ -159,7 +164,7 @@ when 'init'
   keyfile = Pathname.new(parameters.first)
   MOSS.create(keyfile)
 when 'git'
-  Kernel.system("/usr/bin/env", "git", *parameters, {chdir: MOSS.store})
+  Kernel.system(GIT, *parameters, {chdir: MOSS.store})
 else
   raise "command #{action} unrecognized"
 end
