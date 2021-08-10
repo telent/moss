@@ -21,7 +21,7 @@ end
 
 class Moss
   attr_reader :root
-  
+
   def initialize(root)
     @root = Pathname.new(root)
   end
@@ -40,7 +40,7 @@ class Moss
       f.write `#{AGE_KEYGEN} -y #{keyfile.to_s.inspect}`
     end
   end
-  
+
   def store
     root.join("store")
   end
