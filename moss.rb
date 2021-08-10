@@ -46,6 +46,18 @@ class Moss
     store.join(".git").exist?
   end
 
+  private def find_in_subtree(subtree, filename)
+    pathname = subtree.join(filename)
+    case
+    when pathname.readable?
+      pathname
+    when subtree.to_s >  STORE.to_s
+      find_in_subtree(subtree.parent, filename)
+    else
+      nil
+    end
+  end
+
   private def recipients_for_secret(name)
     pathname = store.join("#{name}.age")
     find_in_subtree(pathname.parent, ".recipients") or
@@ -97,18 +109,6 @@ def random_alnum(length)
   bytes.pack("C*")
 end
 
-
-def find_in_subtree(subtree, filename)
-  pathname = subtree.join(filename)
-  case
-  when pathname.readable?
-    pathname
-  when subtree.to_s >  STORE.to_s
-    find_in_subtree(subtree.parent, filename)
-  else
-    nil
-  end
-end
 
 action, *parameters = ARGV
 case action
