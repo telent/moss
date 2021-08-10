@@ -7,8 +7,6 @@ def xdg_data_home
   ENV.fetch("XDG_DATA_HOME", "#{ENV['HOME']}/.local/share")
 end
 
-STORE = Pathname.new(ENV['MOSS_STORE'] || "#{xdg_data_home}/moss/store")
-
 def identity_file
   value = ENV.fetch('MOSS_IDENTITY_FILE',  "#{xdg_data_home}/moss/identity")
   File.exist?(value) or
@@ -32,8 +30,8 @@ class Moss
     keyfile.read.match(/AGE-SECRET-KEY-1/) or
       raise "#{keyfile} does not appear to be an age identity"
     store.mkpath
-    FileUtils.cp(keyfile,  STORE.parent.join("identity"))
-    File.open(STORE.join(".recipients"), "w") do |f|
+    FileUtils.cp(keyfile,  store.parent.join("identity"))
+    File.open(store.join(".recipients"), "w") do |f|
       f.write `age-keygen -y #{keyfile.to_s.inspect}`
     end
   end
@@ -51,7 +49,7 @@ class Moss
     case
     when pathname.readable?
       pathname
-    when subtree.to_s >  STORE.to_s
+    when subtree.to_s >  store.to_s
       find_in_subtree(subtree.parent, filename)
     else
       nil
@@ -71,7 +69,7 @@ class Moss
       f.write(content)
     end
     if git_managed?
-      Kernel.system("cd #{STORE.to_s} && git add #{pathname.relative_path_from(STORE).to_s.inspect} && git commit -m'new secret'")
+      Kernel.system("cd #{store.to_s} && git add #{pathname.relative_path_from(store).to_s.inspect} && git commit -m'new secret'")
     end
   end
 
@@ -96,7 +94,10 @@ class Moss
   end
 end
 
-MOSS = Moss.new(STORE.parent)
+
+
+
+MOSS = Moss.new(Pathname.new(ENV['MOSS_STORE'] || "#{xdg_data_home}/moss/store").parent)
 
 def random_alnum(length)
   bytes = File.open("/dev/urandom", "rb") do |random|
@@ -158,7 +159,7 @@ when 'init'
   keyfile = Pathname.new(parameters.first)
   MOSS.create(keyfile)
 when 'git'
-  Kernel.system("/usr/bin/env", "git", *parameters, {chdir: STORE})
+  Kernel.system("/usr/bin/env", "git", *parameters, {chdir: MOSS.store})
 else
   raise "command #{action} unrecognized"
 end
