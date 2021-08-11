@@ -110,3 +110,8 @@ Feature: command-line password management
     When I store a secret for "silly/two\nlines" with content "horsebattery"
     Then "silly/two\nlines.age" plaintext is "horsebattery"
 
+  Scenario: I can see usage information
+    When I run "moss help"
+    Then  I see the string "Store and retrieve encrypted secrets"
+    And I see the string "Usage: moss \[command\] \[parameters\]"
+    And I see the string "add a secret to the store"

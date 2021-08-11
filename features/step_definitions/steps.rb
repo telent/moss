@@ -189,3 +189,8 @@ Then("my identity file is readable only by me") do
   mode =  File.stat(pathname).mode
   expect(mode & 077).to be_zero
 end
+
+When("I run \"moss help\"") do
+  @i_see = shell "#{MOSS} help"
+end
+
