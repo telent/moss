@@ -81,7 +81,7 @@ Feature: command-line password management
     Then the store directory is under XDG_DATA_HOME
 
   Scenario: I can create a new store
-    Given I am using a temporary password store
+    Given I set MOSS_STORE to a unique temporary pathname
     When I create a moss instance with identity "me.key"
     Then the instance store exists
     And the instance identity is "me.key"
