@@ -10,7 +10,6 @@ def shell(s)
 end
 
 IDENTITY_FILE = "fixtures/keys/me.key"
-ENV['MOSS_IDENTITY_FILE'] = IDENTITY_FILE
 
 def store_path(s)
   Pathname.new(ENV["MOSS_STORE"]).join(s)
@@ -29,18 +28,15 @@ def recipient_for_identity(identity_file)
     raise "can't get pubkey for identity #{identity_file}"
 end
 
-Given("I have the identity {string}") do |keyfile|
-  @identity_path = "fixtures/keys/#{keyfile}"
-end
-
 Given("I set MOSS_STORE to a unique temporary pathname") do
   ENV["MOSS_STORE"] = Dir.mktmpdir + "/store"
 end
 
 Given("I am using a temporary password store") do
-  @identity_path ||= "fixtures/keys/me.key"
   ENV["MOSS_STORE"] = Dir.mktmpdir + "/store"
-  add_to_store(".recipients", recipient_for_identity(@identity_path))
+
+  add_to_store("../identity", File.read(IDENTITY_FILE))
+  add_to_store(".recipients", recipient_for_identity(IDENTITY_FILE))
 end
 
 Given("I am using the example password store") do

@@ -14,13 +14,6 @@ def xdg_data_home
   ENV.fetch("XDG_DATA_HOME", "#{ENV['HOME']}/.local/share")
 end
 
-def identity_file
-  value = ENV.fetch('MOSS_IDENTITY_FILE',  "#{xdg_data_home}/moss/identity")
-  File.exist?(value) or
-    raise "missing identity file (private key) at #{IDENTITY_FILE}, use age-keygen to create"
-  value
-end
-
 class Moss
   attr_reader :root
 
@@ -78,6 +71,10 @@ class Moss
     root.join("store")
   end
 
+  def identity_file
+    root.join("identity")
+  end
+  
   def git_managed?
     store.join(".git").exist?
   end
@@ -145,8 +142,6 @@ class Moss
     Kernel.system(GIT, *parameters, {chdir: store})
   end
 end
-
-
 
 
 MOSS = Moss.new(Pathname.new(ENV['MOSS_STORE'] || "#{xdg_data_home}/moss/store").parent)
