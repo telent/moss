@@ -144,7 +144,7 @@ class Moss
 end
 
 
-MOSS = Moss.new(Pathname.new(ENV['MOSS_STORE'] || "#{xdg_data_home}/moss/store").parent)
+MOSS = Moss.new(ENV['MOSS_HOME'] || "#{xdg_data_home}/moss")
 
 def random_alnum(length)
   bytes = File.open("/dev/urandom", "rb") do |random|

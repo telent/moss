@@ -32,6 +32,13 @@ you have age 1.0.0-rc3 or later
     $ moss git init                  # if you want to share it with other machines
     $ moss git remote add me@githost.example.com:/home/git/passwords
 
+moss keeps its secrets in 
+
+* `$MOSS_HOME/store`, if the MOSS_HOME environemt variable exists, or
+* `$XDG_DATA_HOME/moss/store`, if the XDG_DATA_HOME environment variable exists, or
+* `$HOME/.local/share/moss/store` : $HOME is assumed to exist
+
+
 ## Storing a secret
 
     $ echo 'supersekritpw' | moss add folder/secretname

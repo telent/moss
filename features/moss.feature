@@ -81,21 +81,21 @@ Feature: command-line password management
     Then the store directory is under XDG_DATA_HOME
 
   Scenario: I can create a new store
-    Given I set MOSS_STORE to a unique temporary pathname
+    Given I set MOSS_HOME to a unique temporary pathname
     When I create a moss instance with identity "me.key"
     Then the instance store exists
     And the instance identity is "me.key"
     And the store root has .recipients for the identity "me.key"
 
   Scenario: I can create a new store with an encrypted key
-    Given I set MOSS_STORE to a unique temporary pathname
+    Given I set MOSS_HOME to a unique temporary pathname
     When I interactively create a moss instance with identity "encrypted.key" and passphrase "hello foo"
     Then the instance store exists
     And the instance identity is "encrypted.key"
     And the store root has recipient "age1qqawnse9rfxjun2xmklk3r2pudlfjx0z4utjuwlmq7t9l60z9e2sap9vc8"
 
   Scenario: Files in the store are not readable by other users
-    Given I set MOSS_STORE to a unique temporary pathname
+    Given I set MOSS_HOME to a unique temporary pathname
     When I create a moss instance with identity "me.key"
     When I generate a secret for "home/ebay" with length 20
     Then the store file "home/ebay.age" is readable only by me

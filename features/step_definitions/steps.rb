@@ -12,7 +12,7 @@ end
 IDENTITY_FILE = "fixtures/keys/me.key"
 
 def store_path(s)
-  Pathname.new(ENV["MOSS_STORE"]).join(s)
+  Pathname.new(ENV["MOSS_HOME"]).join("store", s)
 end
 
 def add_to_store(path, content)
@@ -28,19 +28,19 @@ def recipient_for_identity(identity_file)
     raise "can't get pubkey for identity #{identity_file}"
 end
 
-Given("I set MOSS_STORE to a unique temporary pathname") do
-  ENV["MOSS_STORE"] = Dir.mktmpdir + "/store"
+Given("I set MOSS_HOME to a unique temporary pathname") do
+  ENV["MOSS_HOME"] = Dir.mktmpdir 
 end
 
 Given("I am using a temporary password store") do
-  ENV["MOSS_STORE"] = Dir.mktmpdir + "/store"
+  ENV["MOSS_HOME"] = Dir.mktmpdir
 
   add_to_store("../identity", File.read(IDENTITY_FILE))
   add_to_store(".recipients", recipient_for_identity(IDENTITY_FILE))
 end
 
 Given("I am using the example password store") do
-  ENV["MOSS_STORE"] = "fixtures/store"
+  ENV["MOSS_HOME"] = "fixtures"
 end
 
 When("I generate a secret for {string} with length {int}") do |name,  length|
@@ -130,16 +130,16 @@ Given("there are recipient files in different subtrees") do |table|
 end
 
 Given("the store is version-controlled") do
-  shell "cd #{ENV["MOSS_STORE"]} && git init --initial-branch=main"
+  shell "cd #{ENV["MOSS_HOME"]}/store && git init --initial-branch=main"
 end
 
 Then("the change to {string} is committed to version control") do |name|
-  log = shell "cd #{ENV["MOSS_STORE"]} && git log #{name}"
+  log = shell "cd #{ENV["MOSS_HOME"]}/store && git log #{name}"
   expect(log).to match /new secret/
 end
 
 Given("I do not specify a store") do
-  ENV.delete('MOSS_STORE')
+  ENV.delete('MOSS_HOME')
 end
 
 Then("the store directory is under XDG_DATA_HOME") do
@@ -158,9 +158,9 @@ When("I interactively create a moss instance with identity {string} and passphra
 end
 
 Then("the instance store exists") do
-  expect(Pathname.new(ENV['MOSS_STORE'])).to be_directory
+  expect(Pathname.new(ENV['MOSS_HOME']).join("store")).to be_directory
 end
-
+         
 Then("the instance identity is {string}") do |keyfile|
   expect(store_path("../identity").read).to eq File.read("fixtures/keys/#{keyfile}")
 end
