@@ -4,7 +4,7 @@ require 'tmpdir'
 require 'fileutils'
 
 def shell(s)
-  output = IO.popen(["bash", "-c", s]) do |f| f.read end
+  output = IO.popen(["bash", "-c", s], "r", 2 => 1) do |f| f.read end
   $?.exitstatus.zero? or raise "#{$?} : #{@i_see}"
   output
 end
