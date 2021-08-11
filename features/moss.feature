@@ -101,3 +101,12 @@ Feature: command-line password management
     Then the store file "home/ebay.age" is readable only by me
     And the store file "home/" is readable only by me
     And my identity file is readable only by me
+
+  Scenario: I can create files with funny characters
+    Given I am using a temporary password store
+    When I store a secret for "home/with space" with content "horsebattery"
+    Then "home/with space.age" plaintext is "horsebattery"
+
+    When I store a secret for "silly/two\nlines" with content "horsebattery"
+    Then "silly/two\nlines.age" plaintext is "horsebattery"
+

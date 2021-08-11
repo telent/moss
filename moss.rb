@@ -28,23 +28,31 @@ class Moss
     @root = Pathname.new(root)
   end
 
-  # This is the method that "moss init" calls, which could be better
-  # named. "initialize" would be a good name if it weren't special to
-  # Ruby
-
   def encrypted?(filename)
     magic = "age-encryption.org/v1"
     File.read(filename, magic.length) == magic
   end
 
+  # this works like backticks, but can be passed an array instead of a
+  # string, thus avoiding shell quoting pitfalls
+  private def capture_output(command)
+    if command.respond_to?(:first) then command = command.map(&:to_s) end
+    IO.popen(command) {|f|
+      f.read
+    }
+  end
+  
   def pubkey_for_identity(filename)
     pubkey =
       if encrypted?(filename)
-        IO.popen("set -o pipefail; #{AGE} -d #{filename} | #{AGE_KEYGEN} -y -") {|f|
+        plaintext = capture_output([AGE, "-d", filename])
+        IO.popen([AGE_KEYGEN, "-y", "-"], "r+") do |f|
+          f.write(plaintext)
+          f.close_write
           f.read
-        }
+        end                                            
       else
-        IO.popen("#{AGE_KEYGEN} -y #{filename}") { |f| f.read }
+        capture_output([AGE_KEYGEN, "-y", filename.to_s])
       end
     if $?.exitstatus.zero?
       pubkey
@@ -53,6 +61,9 @@ class Moss
     end
   end
 
+  # This is the method that "moss init" calls, which could be better
+  # named. "initialize" would be a good name if it weren't special to
+  # Ruby
   def create(keyfile)
     keyfile.exist? or raise "Cannot read identity at #{keyfile}"
     recipient = pubkey_for_identity(keyfile)
@@ -71,6 +82,8 @@ class Moss
     store.join(".git").exist?
   end
 
+  # ascend the directory hierarchy looking for the filename,
+  # stopping at the store directory. this method is badly named
   private def find_in_subtree(subtree, filename)
     pathname = subtree.join(filename)
     case
@@ -92,18 +105,25 @@ class Moss
   def write_secret(name, content)
     pathname = store.join("#{name}.age")
     pathname.dirname.mkpath
-    IO.popen("#{AGE} -a --recipients-file #{recipients_for_secret(name)} -o #{pathname.to_s}", "w") do |f|
+    IO.popen([AGE,
+              "-a", "--recipients-file", recipients_for_secret(name).to_s,
+              "-o", pathname.to_s], "w") do |f|
       f.write(content)
     end
     if git_managed?
-      Kernel.system("cd #{store.to_s} && git add #{pathname.relative_path_from(store).to_s.inspect} && git commit -m'new secret'")
+      Kernel.system(GIT, "add", pathname.relative_path_from(store).to_s,
+                    {chdir: MOSS.store})
+      Kernel.system(GIT, "commit", "-m", "new secret",
+                    {chdir: MOSS.store})
     end
   end
 
   def read_secret(name)
     pathname = store.join("#{name}.age")
     File.exist?(pathname) or raise "Can't open #{pathname}: $!"
-    `#{AGE} -i #{identity_file} -d #{pathname}`
+    capture_output([AGE,
+                    "-i", identity_file,
+                    "-d", pathname])
   end
 
   def secrets
@@ -118,6 +138,11 @@ class Moss
       identity_file: identity_file.to_s,
       git: git_managed?
     }
+  end
+
+  def git_operation(parameters)
+    raise "not a git repo" unless git_managed?
+    Kernel.system(GIT, *parameters, {chdir: store})
   end
 end
 
@@ -186,7 +211,7 @@ when 'init'
   keyfile = Pathname.new(parameters.first)
   MOSS.create(keyfile)
 when 'git'
-  Kernel.system(GIT, *parameters, {chdir: MOSS.store})
+  MOSS.git_operation(parameters)
 else
   raise "command #{action} unrecognized"
 end

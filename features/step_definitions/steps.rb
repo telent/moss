@@ -4,7 +4,7 @@ require 'tmpdir'
 require 'fileutils'
 
 def shell(s)
-  output = %x{bash -c #{s.inspect}}
+  output = IO.popen(["bash", "-c", s]) do |f| f.read end
   $?.exitstatus.zero? or raise "#{$?} : #{@i_see}"
   output
 end
@@ -28,8 +28,6 @@ def recipient_for_identity(identity_file)
   File.open(identity_file).read.match(/(age1.+)$/).captures.first or
     raise "can't get pubkey for identity #{identity_file}"
 end
-
-
 
 Given("I have the identity {string}") do |keyfile|
   @identity_path = "fixtures/keys/#{keyfile}"
@@ -56,7 +54,7 @@ end
 
 When("I store a secret for {string} with content {string}") do |name, content|
   @stored_secret_name = name
-  shell "echo -n #{content} | #{MOSS} insert #{name}"
+  shell "echo -n #{content} | #{MOSS} insert #{name.inspect}"
 end
 
 Then("I see a {int} character string") do |len|
@@ -71,7 +69,7 @@ Then("{string} plaintext is {string}") do |name, expected|
   path_name = store_path(name)
   contents = File.read(path_name)
   expect(contents).to match /AGE ENCRYPTED FILE/
-  plaintext = shell "age -i #{IDENTITY_FILE} -d #{path_name}"
+  plaintext = shell "age -i #{IDENTITY_FILE} -d #{path_name.to_s.inspect}"
   expect(plaintext).to eq expected
 end
 
@@ -79,7 +77,7 @@ Then("I can decrypt it with key {string} to {string}") do |keyfile, expected|
   path_name = store_path(@stored_secret_name + '.age')
   contents = File.read(path_name)
   expect(contents).to match /AGE ENCRYPTED FILE/
-  plaintext = shell "age -i fixtures/keys/#{keyfile} -d #{path_name}"
+  plaintext = shell "age -i fixtures/keys/#{keyfile} -d #{path_name.to_s.inspect}"
   expect(plaintext).to eq expected
 end
 
@@ -88,14 +86,14 @@ Then("I cannot decrypt it with key {string}") do |keyfile|
   contents = File.read(path_name)
   expect(contents).to match /AGE ENCRYPTED FILE/
   # we expect age to fail, redirect stderr to avoid messing up test output
-  shell "!  age -i fixtures/keys/#{keyfile} -d #{path_name} 2>&1"
+  shell "!  age -i fixtures/keys/#{keyfile} -d #{path_name.to_s.inspect} 2>&1"
 end
 
 Then("{string} plaintext matches {word}") do |name, re|
   path_name = store_path(name)
   contents = File.read(path_name)
   expect(contents).to match /AGE ENCRYPTED FILE/
-  shell "age -i #{IDENTITY_FILE} -d #{path_name}"
+  shell "age -i #{IDENTITY_FILE} -d #{path_name.to_s.inspect}"
   expect(@i_see).to match Regexp.new(re)
 end
 
