@@ -190,7 +190,14 @@ Then("my identity file is readable only by me") do
   expect(mode & 077).to be_zero
 end
 
-When("I run \"moss help\"") do
-  @i_see = shell "#{MOSS} help"
+When("I run {string}") do |command|
+  # don't fail if error returns, as we need to test that
+  @i_see = IO.popen(["bash", "-c", "#{command.sub(/\Amoss/,  MOSS)} 2>&1"],
+                    "r") do |f| f.read end
+  @exit_status = $?.exitstatus
 end
 
+Then("it complains that the wrong arguments were given") do
+  expect(@exit_status).to be > 0
+  expect(@i_see).to match /usage: moss cat \<file\>/
+end

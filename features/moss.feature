@@ -115,3 +115,7 @@ Feature: command-line password management
     Then  I see the string "Store and retrieve encrypted secrets"
     And I see the string "Usage: moss \[command\] \[parameters\]"
     And I see the string "add a secret to the store"
+
+  Scenario: argument checking
+    When I run "moss cat"
+    Then it complains that the wrong arguments were given

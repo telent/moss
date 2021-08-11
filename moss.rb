@@ -169,30 +169,38 @@ class CLI
 
   class << self
     def command(name, docstring, &blk)
-      @@commands[name] = { name: name, doc: docstring, block: blk }
+      @@commands[name] = { name: name, doc: docstring }
+      # we use methods here instead of blocks, because blocks
+      # don't have required parameters
+      define_method name, &blk
     end
-    
+
     def dispatch(name, *parameters)
-      @@commands.fetch(name.to_sym)[:block].call(*parameters)
-      true
+      command = @@commands[name.to_sym]
+      instance =  new
+      instance.public_send(command[:name], *parameters)
+    rescue ArgumentError => e
+      meth = instance.method(command[:name])
+      params = meth.parameters.map {|p| "<#{p[1]}>" }.join(" ")
+      raise "usage: moss #{name} #{params}"
     end
 
     def aka(command, command_alias)
       @@commands[command_alias] = @@commands[command]
     end
-    
-    def usage
+
+    def usage(instance)
       puts "Store and retrieve encrypted secrets\n\n"
       puts "Usage: moss [command] [parameters]...\n\n"
       @@commands.each do |name, command|
         next unless name == command[:name] # skip aliases
-        meth = command[:block]
+        meth = instance.method(command[:name])
         params = meth.parameters
         printf "  %-40s - %s   \n",
                ([command[:name]] + params.map {|p| p[1].to_s }).join(" "),
                command[:doc]
       end
-    end      
+    end
   end
 
   command :generate, "generate a random secret" do |filename, length|
@@ -250,8 +258,13 @@ class CLI
   end
 
   command :help, "display this help text" do
-    self.usage
+    self.class.usage(self)
   end
 end
 
-CLI.dispatch(* ARGV)
+begin
+  CLI.dispatch(* ARGV)
+rescue StandardError => e
+  warn e.message
+  exit 1
+end
