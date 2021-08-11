@@ -179,9 +179,11 @@ class CLI
     end
 
     def dispatch(name, *parameters)
-      command = @@commands[name.to_sym]
+      command = @@commands.fetch(name.to_sym)
       instance =  new
       instance.public_send(command[:name], *parameters)
+    rescue KeyError => e
+      raise "Command not recognized, try \"moss help\""
     rescue ArgumentError => e
       meth = instance.method(command[:name])
       params = meth.parameters.map {|p| "<#{p[1]}>" }.join(" ")
