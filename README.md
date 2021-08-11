@@ -24,12 +24,12 @@ moss needs you to create an age identity that it will use to decrypt
 your secrets. You can choose to protect this key with a passphrase, if
 you have age 1.0.0-rc3 or later
 
-	$ age-keygen | age -p > key.age  # password-protected key
-	$ age-keygen > key.age           # key with no password (if you have FDE)
+    $ age-keygen | age -p > key.age  # password-protected key
+    $ age-keygen > key.age           # key with no password (if you have FDE)
 
-	$ moss init key.age
+    $ moss init key.age
 
-	$ moss git init                  # if you want to share it with other machines
+    $ moss git init                  # if you want to share it with other machines
     $ moss git remote add me@githost.example.com:/home/git/passwords
 
 ## Storing a secret
@@ -115,3 +115,5 @@ only writing this down because I figured out how to
 * check before overwriting secrets that exist already
 * support re-encrypting a subtree when recipients change
 * --help option
+* warn or fail if iffy store permissions?
+
