@@ -3,6 +3,8 @@ require 'pathname'
 require 'tempfile'
 require 'json'
 
+File.umask(077)
+
 # don't change these lines without changing the sed commands in Makefile
 AGE='age'
 AGE_KEYGEN='age-keygen'

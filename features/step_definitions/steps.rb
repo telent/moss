@@ -183,3 +183,15 @@ end
 Then("I can run git {string}") do |command|
   @i_see = shell "#{MOSS} git #{command}"
 end
+
+Then("the store file {string} is readable only by me") do |store_file|
+  pathname = store_path(store_file)
+  mode =  File.stat(pathname).mode
+  expect(mode & 077).to be_zero
+end
+
+Then("my identity file is readable only by me") do
+  pathname= store_path("../identity")
+  mode =  File.stat(pathname).mode
+  expect(mode & 077).to be_zero
+end

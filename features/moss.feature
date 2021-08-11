@@ -93,3 +93,11 @@ Feature: command-line password management
     Then the instance store exists
     And the instance identity is "encrypted.key"
     And the store root has recipient "age1qqawnse9rfxjun2xmklk3r2pudlfjx0z4utjuwlmq7t9l60z9e2sap9vc8"
+
+  Scenario: Files in the store are not readable by other users
+    Given I set MOSS_STORE to a unique temporary pathname
+    When I create a moss instance with identity "me.key"
+    When I generate a secret for "home/ebay" with length 20
+    Then the store file "home/ebay.age" is readable only by me
+    And the store file "home/" is readable only by me
+    And my identity file is readable only by me
