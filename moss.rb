@@ -34,7 +34,7 @@ class Moss
       f.read
     }
   end
-  
+
   def pubkey_for_identity(filename)
     pubkey =
       if encrypted?(filename)
@@ -43,7 +43,7 @@ class Moss
           f.write(plaintext)
           f.close_write
           f.read
-        end                                            
+        end
       else
         capture_output([AGE_KEYGEN, "-y", filename.to_s])
       end
@@ -74,7 +74,7 @@ class Moss
   def identity_file
     root.join("identity")
   end
-  
+
   def git_managed?
     store.join(".git").exist?
   end
@@ -138,8 +138,11 @@ class Moss
   end
 
   def git_operation(parameters)
-    raise "not a git repo" unless git_managed?
-    Kernel.system(GIT, *parameters, {chdir: store})
+    if (git_managed? || parameters.first == 'init')
+      Kernel.system(GIT, *parameters, {chdir: store})
+    else
+      raise "not a git repo"
+    end
   end
 end
 
@@ -163,7 +166,7 @@ def random_alnum(length)
   bytes.pack("C*")
 end
 
-    
+
 class CLI
   @@commands = {}
 
@@ -214,22 +217,22 @@ class CLI
     MOSS.write_secret(filename, secret)
   end
   aka :add, :insert
-  
+
   command :show, "display a secret" do |file|
     STDOUT.write(MOSS.read_secret(file))
-  end   
+  end
   aka :show, :cat
-  
+
   command :search, "search secrets with names matching term" do |*term|
     files = MOSS.secrets.filter {|f|
       f.match(Regexp.new(term.join(" ")))
     }
     files.each do |n|
-     puts n
+      puts n
     end
   end
   aka :search, :list
-  
+
   command :edit, "edit a secret" do |file|
     content = MOSS.read_secret(file)
     Tempfile.create(file.gsub(/[\W]/,"")) do |f|
@@ -244,11 +247,11 @@ class CLI
       end
     end
   end
-  
+
   command :config, "show configuration" do
     puts JSON.generate(MOSS.config)
   end
-  
+
   command :init, "create new moss repository" do |keyfile|
     MOSS.create(Pathname.new(keyfile))
   end

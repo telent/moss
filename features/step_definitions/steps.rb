@@ -29,7 +29,7 @@ def recipient_for_identity(identity_file)
 end
 
 Given("I set MOSS_HOME to a unique temporary pathname") do
-  ENV["MOSS_HOME"] = Dir.mktmpdir 
+  ENV["MOSS_HOME"] = Dir.mktmpdir
 end
 
 Given("I am using a temporary password store") do
@@ -160,7 +160,7 @@ end
 Then("the instance store exists") do
   expect(Pathname.new(ENV['MOSS_HOME']).join("store")).to be_directory
 end
-         
+
 Then("the instance identity is {string}") do |keyfile|
   expect(store_path("../identity").read).to eq File.read("fixtures/keys/#{keyfile}")
 end
