@@ -3,8 +3,6 @@ require "pathname"
 require "tempfile"
 require "json"
 
-File.umask(077)
-
 # don't change these lines without changing the sed commands in Makefile
 AGE='age'
 AGE_KEYGEN='age-keygen'
@@ -30,7 +28,7 @@ class Moss
   # string, thus avoiding shell quoting pitfalls
   private def capture_output(command)
     if command.respond_to?(:first) then command = command.map(&:to_s) end
-    IO.popen(command) {|f|
+    IO.popen(command) { |f|
       f.read
     }
   end
@@ -61,7 +59,7 @@ class Moss
     keyfile.exist? or raise "Cannot read identity at #{keyfile}"
     recipient = pubkey_for_identity(keyfile)
     store.mkpath
-    FileUtils.cp(keyfile,  store.parent.join("identity"))
+    FileUtils.cp(keyfile, store.parent.join("identity"))
     File.open(store.join(".recipients"), "w") do |f|
       f.write recipient
     end
@@ -83,13 +81,10 @@ class Moss
   # stopping at the store directory. this method is badly named
   private def find_in_subtree(subtree, filename)
     pathname = subtree.join(filename)
-    case
-    when pathname.readable?
+    if pathname.readable?
       pathname
-    when subtree.to_s >  store.to_s
+    elsif subtree.to_s > store.to_s
       find_in_subtree(subtree.parent, filename)
-    else
-      nil
     end
   end
 
@@ -124,8 +119,8 @@ class Moss
   end
 
   def secrets
-    Dir[store.join('**/*.age')].map {|n|
-      Pathname.new(n).relative_path_from(store).sub_ext('').to_s
+    Dir[store.join("**/*.age")].map { |n|
+      Pathname.new(n).relative_path_from(store).sub_ext("").to_s
     }
   end
 
@@ -138,28 +133,26 @@ class Moss
   end
 
   def git_operation(parameters)
-    if (git_managed? || parameters.first == 'init')
-      Kernel.system(GIT, *parameters, {chdir: store})
+    if git_managed? || parameters.first == "init"
+      Kernel.system(GIT, *parameters, { chdir: store })
     else
       raise "not a git repo"
     end
   end
 end
 
-
-MOSS = Moss.new(ENV['MOSS_HOME'] || "#{xdg_data_home}/moss")
+MOSS = Moss.new(ENV["MOSS_HOME"] || "#{xdg_data_home}/moss")
 
 def random_alnum(length)
   bytes = File.open("/dev/urandom", "rb") do |random|
-    random.read(length).unpack("C*").map {|c|
+    random.read(length).unpack("C*").map { |c|
       c = c % 62
-      case
-      when c < 26
-        ('A'.ord + c)
-      when c < 52
-        ('a'.ord + (c-26))
+      if c < 26
+        ("A".ord + c)
+      elsif c < 52
+        ("a".ord + (c - 26))
       else
-        ('0'.ord + (c-52))
+        ("0".ord + (c - 52))
       end
     }
   end
@@ -173,6 +166,7 @@ class CLI
       define_method command_name, &blk
       @@commands[command_name] = { name: command_name, doc: docstring }
     end
+
     def link(ends)
       dest, src = ends.first
       @@commands[dest] = { alias: src }
@@ -183,13 +177,14 @@ class CLI
     name = argv.first.to_sym
     args = argv.drop(1)
     raise NoMethodError unless @@commands.key?(name)
+
     command = @@commands[name]
     if dst = command[:alias]
       command = @@commands[dst]
     end
     arg_signature = method(command[:name]).parameters
 
-    return [ name, [] ] if arg_signature.empty?
+    return [name, []] if arg_signature.empty?
 
     flags = argv.reduce({}) {|m, flag|
       key, val= flag.match(/\A--(\w+)(?:=(.+))?/)&.captures
@@ -208,12 +203,12 @@ class CLI
         m
       end
     }
-    [ command[:name],
-      payload.respond_to?(:merge) ? flags.merge(payload) : payload ]
+    [command[:name],
+     payload.respond_to?(:merge) ? flags.merge(payload) : payload]
   end
 
   def params_to_s(meth)
-    meth.parameters.map {|(type, name)|
+    meth.parameters.map { |(type, name)|
       case type
       when :req, :keyreq
         "<#{name}>"
@@ -236,9 +231,9 @@ class CLI
     name, payload = parse_arguments(argv)
     begin
       if payload.respond_to?(:keys)
-        self.public_send(name,  **payload)
+        public_send(name,  **payload)
       else
-        self.public_send(name,  *payload)
+        public_send(name,  *payload)
       end
     rescue ArgumentError => e
       raise UsageError, "usage: moss #{describe_usage(name)}"
@@ -248,9 +243,9 @@ class CLI
   def usage
     command_texts = @@commands.map { |name, command|
       if command[:name]
-        sprintf "  %-40s - %s",
-                describe_usage(name),
-                command[:doc]
+        format "  %-40s - %s",
+               describe_usage(name),
+               command[:doc]
       else
         ""
       end
@@ -258,7 +253,6 @@ class CLI
 
     usage_header + command_texts.join("\n")
   end
-
 end
 
 def cli
@@ -286,7 +280,7 @@ def cli
     link :cat => :show
 
     command :search, "search secrets with names matching term" do |*term|
-      files = MOSS.secrets.filter {|f|
+      files = MOSS.secrets.filter { |f|
         f.match(Regexp.new(term.join(" ")))
       }
       files.each do |n|
@@ -297,15 +291,15 @@ def cli
 
     command :edit, "edit a secret" do |file:|
       content = MOSS.read_secret(file)
-      Tempfile.create(file.gsub(/[\W]/,"")) do |f|
+      Tempfile.create(file.gsub(/\W/, "")) do |f|
         f.write(content)
         f.flush
-        if Kernel.system(ENV['EDITOR'], f.path)
+        if Kernel.system(ENV["EDITOR"], f.path)
           f.rewind
           secret = f.read
           MOSS.write_secret(file, secret)
         else
-          raise "#{$?}"
+          raise $?.to_s
         end
       end
     end
@@ -323,16 +317,16 @@ def cli
     end
 
     command :help, "display this help text" do
-      puts self.usage
+      puts usage
     end
   end
   cli
 end
 
-if $0==__FILE__
+if $0 == __FILE__
   # running as a script
   begin
-    File.umask(077)
+    File.umask(0o77)
     cli.dispatch(ARGV)
   rescue StandardError => e
     warn e.message
