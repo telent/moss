@@ -18,13 +18,9 @@ class CLI1
     return [ name, [] ] if arg_signature.empty?
           
     flags = argv.reduce({}) {|m, flag|
-      matchdata = flag.match(/\A--(\w+)(?:=(.+))?/)
-      if matchdata
-        key, val = matchdata.captures
-        key ?
-          m.merge(key.to_sym => val ? val : :key_present) :
-          m
-      else
+      key, val= flag.match(/\A--(\w+)(?:=(.+))?/)&.captures
+      key ?
+        m.merge(key.to_sym => val ? val : :key_present) :
         m
       end
     }
