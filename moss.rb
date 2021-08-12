@@ -117,7 +117,7 @@ class Moss
 
   def read_secret(name)
     pathname = store.join("#{name}.age")
-    File.exist?(pathname) or raise "Can't open #{pathname}: $!"
+    File.exist?(pathname) or raise "Can't open non-existent file #{pathname}"
     capture_output([AGE,
                     "-i", identity_file,
                     "-d", pathname])

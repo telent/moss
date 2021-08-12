@@ -14,7 +14,7 @@ class <<cli
     #
   end
   command :encrypt, "scramble a file" do |file:, signed: false|
-    # 
+    #
   end
   command :mail, "send email" do |rcpt:, subject: "(no subject)"|
     "/usr/lib/sendmail #{rcpt} -s #{subject.inspect}"
@@ -50,7 +50,7 @@ RSpec.describe CLI do
 
     it "parses flags with values" do
       expect(cli.parse_arguments ["mail", "dan", "--subject=hello dan"]).
-        to match([:mail, { rcpt: "dan", subject: "hello dan" }])      
+        to match([:mail, { rcpt: "dan", subject: "hello dan" }])
     end
 
     it "parses rest parameters" do
