@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+require 'English'
 require "pathname"
 require "tempfile"
 require "json"
@@ -187,7 +188,7 @@ class CLI
     flags = argv.reduce({}) {|m, flag|
       key, val= flag.match(/\A--(\w+)(?:=(.+))?/)&.captures
       key ?
-        m.merge(key.to_sym => val ? val : :key_present) :
+        m.merge(key.to_sym => (val || :key_present)) :
         m
     }
 
