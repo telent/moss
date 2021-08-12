@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
-require 'pathname'
-require 'tempfile'
-require 'json'
+require "pathname"
+require "tempfile"
+require "json"
 
 File.umask(077)
 
