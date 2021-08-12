@@ -14,5 +14,9 @@ install: default
 gemset.nix: Gemfile
 	nix-shell -p bundler -p bundix --run "bundle lock && bundix"
 
+test:
+	cucumber --publish-quiet -i
+	rspec -I .
+
 watch:
-	find . -type f | entr cucumber --publish-quiet -i
+	find . -type f | entr $(MAKE) test
