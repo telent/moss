@@ -166,110 +166,165 @@ def random_alnum(length)
   bytes.pack("C*")
 end
 
-
 class CLI
-  @@commands = {}
-
   class << self
-    def command(name, docstring, &blk)
-      @@commands[name] = { name: name, doc: docstring }
-      # we use methods here instead of blocks, because blocks
-      # don't have required parameters
-      define_method name, &blk
-    end
-
-    def dispatch(name, *parameters)
-      command = @@commands.fetch(name.to_sym)
-      instance =  new
-      instance.public_send(command[:name], *parameters)
-    rescue KeyError => e
-      raise "Command not recognized, try \"moss help\""
-    rescue ArgumentError => e
-      meth = instance.method(command[:name])
-      params = meth.parameters.map {|p| "<#{p[1]}>" }.join(" ")
-      raise "usage: moss #{name} #{params}"
-    end
-
-    def aka(command, command_alias)
-      @@commands[command_alias] = @@commands[command]
-    end
-
-    def usage(instance)
-      puts "Store and retrieve encrypted secrets\n\n"
-      puts "Usage: moss [command] [parameters]...\n\n"
-      @@commands.each do |name, command|
-        next unless name == command[:name] # skip aliases
-        meth = instance.method(command[:name])
-        params = meth.parameters
-        printf "  %-40s - %s   \n",
-               ([command[:name]] + params.map {|p| p[1].to_s }).join(" "),
-               command[:doc]
-      end
+    @@commands = {}
+    def command(command_name, docstring, &blk)
+      define_method command_name, &blk
+      @@commands[command_name] = { doc: docstring }
     end
   end
 
-  command :generate, "generate a random secret" do |filename, length|
-    secret = random_alnum(length.to_i)
-    print secret
-    MOSS.write_secret(filename, secret)
-  end
+  def parse_arguments(argv)
+    name = argv.first.to_sym
+    args = argv.drop(1)
+    raise NoMethodError unless @@commands.key?(name)
+    arg_signature = method(name).parameters
 
-  command :add, "add a secret to the store" do |filename|
-    secret = STDIN.read
-    MOSS.write_secret(filename, secret)
-  end
-  aka :add, :insert
+    return [ name, [] ] if arg_signature.empty?
 
-  command :show, "display a secret" do |file|
-    STDOUT.write(MOSS.read_secret(file))
-  end
-  aka :show, :cat
-
-  command :search, "search secrets with names matching term" do |*term|
-    files = MOSS.secrets.filter {|f|
-      f.match(Regexp.new(term.join(" ")))
+    flags = argv.reduce({}) {|m, flag|
+      key, val= flag.match(/\A--(\w+)(?:=(.+))?/)&.captures
+      key ?
+        m.merge(key.to_sym => val ? val : :key_present) :
+        m
     }
-    files.each do |n|
-      puts n
-    end
-  end
-  aka :search, :list
 
-  command :edit, "edit a secret" do |file|
-    content = MOSS.read_secret(file)
-    Tempfile.create(file.gsub(/[\W]/,"")) do |f|
-      f.write(content)
-      f.flush
-      if Kernel.system(ENV['EDITOR'], f.path)
-        f.rewind
-        secret = f.read
-        MOSS.write_secret(file, secret)
-      else
-        raise "#{$!}"
+    payload = arg_signature.reduce({}) { |m, (type, name)|
+      case type
+      when :rest
+        args
+      when :keyreq
+        args.first ? m.merge(name => args.shift) : m
+      when :key
+        m
       end
+    }
+    [ name,
+      payload.respond_to?(:merge) ? flags.merge(payload) : payload ]
+  end
+
+  def params_to_s(meth)
+    meth.parameters.map {|(type, name)|
+      case type
+      when :req, :keyreq
+        "<#{name}>"
+      when :rest
+        "<#{name}...>"
+      when :key
+        "[--#{name}]"
+      end
+    }.join(" ")
+  end
+
+  def describe_usage(method_name)
+    param_string = params_to_s(method(method_name))
+    "#{method_name} #{param_string}"
+  end
+
+  UsageError = Class.new(RuntimeError)
+
+  def dispatch(argv)
+    name, payload = parse_arguments(argv)
+    begin
+      if payload.respond_to?(:keys)
+        self.public_send(name,  **payload)
+      else
+        self.public_send(name,  *payload)
+      end
+    rescue ArgumentError => e
+      raise UsageError, "usage: moss #{describe_usage(name)}"
     end
   end
 
-  command :config, "show configuration" do
-    puts JSON.generate(MOSS.config)
+  def usage
+    command_texts = @@commands.map { |name, command|
+      # unless name == command[:name] # skip aliases
+      sprintf "  %-40s - %s",
+              describe_usage(name),
+              command[:doc]
+    }
+
+    usage_header + command_texts.join("\n")
   end
 
-  command :init, "create new moss repository" do |keyfile|
-    MOSS.create(Pathname.new(keyfile))
-  end
-
-  command :git, "perform git operation in store" do |* parameters|
-    MOSS.git_operation(parameters)
-  end
-
-  command :help, "display this help text" do
-    self.class.usage(self)
-  end
 end
 
-begin
-  CLI.dispatch(* ARGV)
-rescue StandardError => e
-  warn e.message
-  exit 1
+def cli
+  cli = CLI.new
+  class << cli
+    def usage_header
+      "Store and retrieve encrypted secrets\n\n" +
+        "Usage: moss [command] [parameters]...\n\n"
+    end
+    command :generate, "generate a random secret" do |filename:, length:|
+      secret = random_alnum(length.to_i)
+      print secret
+      MOSS.write_secret(filename, secret)
+    end
+
+    command :add, "add a secret to the store" do |filename:, force: false|
+      secret = STDIN.read
+      MOSS.write_secret(filename, secret)
+    end
+#    aka :add, :insert
+
+    command :show, "display a secret" do |file:|
+      STDOUT.write(MOSS.read_secret(file))
+    end
+#    aka :show, :cat
+
+    command :search, "search secrets with names matching term" do |*term|
+      files = MOSS.secrets.filter {|f|
+        f.match(Regexp.new(term.join(" ")))
+      }
+      files.each do |n|
+        puts n
+      end
+    end
+#    aka :search, :list
+
+    command :edit, "edit a secret" do |file:|
+      content = MOSS.read_secret(file)
+      Tempfile.create(file.gsub(/[\W]/,"")) do |f|
+        f.write(content)
+        f.flush
+        if Kernel.system(ENV['EDITOR'], f.path)
+          f.rewind
+          secret = f.read
+          MOSS.write_secret(file, secret)
+        else
+          raise "#{$?}"
+        end
+      end
+    end
+
+    command :config, "show configuration" do
+      puts JSON.generate(MOSS.config)
+    end
+
+    command :init, "create new moss repository" do |keyfile:|
+      MOSS.create(Pathname.new(keyfile))
+    end
+
+    command :git, "perform git operation in store" do |* git_command|
+      MOSS.git_operation(parameters)
+    end
+
+    command :help, "display this help text" do
+      puts self.usage
+    end
+  end
+  cli
+end
+
+if $0==__FILE__
+  # running as a script
+  begin
+    File.umask(077)
+    cli.dispatch(ARGV)
+  rescue StandardError => e
+    warn e.message
+    exit 1
+  end
 end

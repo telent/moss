@@ -1,92 +1,12 @@
 require "moss"
 
-class CLI1
-  class << self
-    @@commands = {}
-    def command(command_name, docstring, &blk)
-      define_method command_name, &blk
-      @@commands[command_name] = { doc: docstring }
-    end
-  end
-
-  def parse_arguments(argv)
-    name = argv.first.to_sym
-    args = argv.drop(1)
-    raise NoMethodError unless @@commands.key?(name)
-    arg_signature = method(name).parameters
-
-    return [ name, [] ] if arg_signature.empty?
-          
-    flags = argv.reduce({}) {|m, flag|
-      key, val= flag.match(/\A--(\w+)(?:=(.+))?/)&.captures
-      key ?
-        m.merge(key.to_sym => val ? val : :key_present) :
-        m
-    }
-
-    payload = arg_signature.reduce({}) { |m, (type, name)|
-      case type
-      when :rest
-        args
-      when :keyreq
-        args.first ? m.merge(name => args.shift) : m
-      when :key
-        m
-      end
-    }
-    [ name,
-      payload.respond_to?(:merge) ? flags.merge(payload) : payload ]
-  end
-
-  def params_to_s(meth)
-    meth.parameters.map {|(type, name)|
-      case type
-      when :req, :keyreq
-        "<#{name}>"
-      when :rest
-        "<#{name}...>"
-      when :key
-        "[--#{name}]"
-      end
-    }.join(" ")
-  end
-  
-  def describe_usage(method_name)
-    param_string = params_to_s(method(method_name))
-    "#{method_name} #{param_string}"
-  end
-  
-  UsageError = Class.new(RuntimeError)
-  
-  def dispatch(argv)
-    name, payload = parse_arguments(argv)
-    begin
-      self.public_send(name,payload)
-    rescue ArgumentError => e
-      raise UsageError, "usage: moss #{describe_usage(name)}"
-    end
-  end
-
-  def usage
-    command_texts = @@commands.map { |name, command|
-      # unless name == command[:name] # skip aliases
-      sprintf "  %-40s - %s",
-              "#{name} #{describe_usage(name)}",
-              command[:doc]
-    }
-    
-    usage_header+ command_texts.join("\n")
-  end
-  
-end
-    
-cli = CLI1.new
+cli = CLI.new
 class <<cli
-  def usage_header 
+  def usage_header
     "Store and retrieve encrypted secrets\n\n" +
-      "Usage: moss [command] [parameters]...\n\n" 
+      "Usage: moss [command] [parameters]...\n\n"
   end
-  
+
   command :greet, "say hello" do |firstname:, lastname:|
     "hello, #{firstname} #{lastname}"
   end
@@ -107,7 +27,7 @@ class <<cli
 end
 
 
-RSpec.describe CLI1 do
+RSpec.describe CLI do
   describe "parameter parsing" do
 
     it "parses positional parameters" do
@@ -160,7 +80,7 @@ RSpec.describe CLI1 do
 
     it "complains if wrong params" do
       expect { cli.dispatch ["mail"] }
-        .to raise_exception(CLI1::UsageError, /usage: moss mail <rcpt> \[--subject\]/)            
+        .to raise_exception(CLI::UsageError, /usage: moss mail <rcpt> \[--subject\]/)
     end
   end
 
