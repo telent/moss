@@ -28,9 +28,7 @@ class Moss
   # string, thus avoiding shell quoting pitfalls
   private def capture_output(command)
     if command.respond_to?(:first) then command = command.map(&:to_s) end
-    IO.popen(command) { |f|
-      f.read
-    }
+    IO.popen(command, &:read)
   end
 
   def pubkey_for_identity(filename)
@@ -45,7 +43,7 @@ class Moss
       else
         capture_output([AGE_KEYGEN, "-y", filename.to_s])
       end
-    if $?.exitstatus.zero?
+    if $CHILD_STATUS.exitstatus.zero?
       pubkey
     else
       raise "can't get public key from identity #{filename}"
@@ -269,13 +267,13 @@ def cli
     end
 
     command :add, "add a secret to the store" do |filename:, force: false|
-      secret = STDIN.read
+      secret = $stdin.read
       MOSS.write_secret(filename, secret)
     end
     link :insert => :add
 
     command :show, "display a secret" do |file:|
-      STDOUT.write(MOSS.read_secret(file))
+      $stdout.write(MOSS.read_secret(file))
     end
     link :cat => :show
 
@@ -299,7 +297,7 @@ def cli
           secret = f.read
           MOSS.write_secret(file, secret)
         else
-          raise $?.to_s
+          raise $CHILD_STATUS.to_s
         end
       end
     end
@@ -323,7 +321,7 @@ def cli
   cli
 end
 
-if $0 == __FILE__
+if $PROGRAM_NAME == __FILE__
   # running as a script
   begin
     File.umask(0o77)
