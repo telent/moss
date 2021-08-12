@@ -117,5 +117,5 @@ Feature: command-line password management
     And I see the string "add a secret to the store"
 
   Scenario: argument checking
-    When I run "moss cat"
+    When I run "moss show"
     Then it complains that the wrong arguments were given

@@ -171,7 +171,11 @@ class CLI
     @@commands = {}
     def command(command_name, docstring, &blk)
       define_method command_name, &blk
-      @@commands[command_name] = { doc: docstring }
+      @@commands[command_name] = { name: command_name, doc: docstring }
+    end
+    def link(ends)
+      dest, src = ends.first
+      @@commands[dest] = { alias: src }
     end
   end
 
@@ -179,7 +183,11 @@ class CLI
     name = argv.first.to_sym
     args = argv.drop(1)
     raise NoMethodError unless @@commands.key?(name)
-    arg_signature = method(name).parameters
+    command = @@commands[name]
+    if dst = command[:alias]
+      command = @@commands[dst]
+    end
+    arg_signature = method(command[:name]).parameters
 
     return [ name, [] ] if arg_signature.empty?
 
@@ -200,7 +208,7 @@ class CLI
         m
       end
     }
-    [ name,
+    [ command[:name],
       payload.respond_to?(:merge) ? flags.merge(payload) : payload ]
   end
 
@@ -239,10 +247,13 @@ class CLI
 
   def usage
     command_texts = @@commands.map { |name, command|
-      # unless name == command[:name] # skip aliases
-      sprintf "  %-40s - %s",
-              describe_usage(name),
-              command[:doc]
+      if command[:name]
+        sprintf "  %-40s - %s",
+                describe_usage(name),
+                command[:doc]
+      else
+        ""
+      end
     }
 
     usage_header + command_texts.join("\n")
@@ -267,12 +278,12 @@ def cli
       secret = STDIN.read
       MOSS.write_secret(filename, secret)
     end
-#    aka :add, :insert
+    link :insert => :add
 
     command :show, "display a secret" do |file:|
       STDOUT.write(MOSS.read_secret(file))
     end
-#    aka :show, :cat
+    link :cat => :show
 
     command :search, "search secrets with names matching term" do |*term|
       files = MOSS.secrets.filter {|f|
@@ -282,7 +293,7 @@ def cli
         puts n
       end
     end
-#    aka :search, :list
+    link :list => :search
 
     command :edit, "edit a secret" do |file:|
       content = MOSS.read_secret(file)
@@ -308,7 +319,7 @@ def cli
     end
 
     command :git, "perform git operation in store" do |* git_command|
-      MOSS.git_operation(parameters)
+      MOSS.git_operation(git_command)
     end
 
     command :help, "display this help text" do

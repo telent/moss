@@ -16,6 +16,7 @@ class <<cli
   command :encrypt, "scramble a file" do |file:, signed: false|
     #
   end
+  link :scramble => :encrypt
   command :mail, "send email" do |rcpt:, subject: "(no subject)"|
     "/usr/lib/sendmail #{rcpt} -s #{subject.inspect}"
   end
@@ -61,6 +62,11 @@ RSpec.describe CLI do
     it "parses when no parameters" do
       expect(cli.parse_arguments %w(help)).
         to match([:help, []])
+    end
+
+    it "processes aliases" do
+      expect(cli.parse_arguments ["scramble", "foo.txt"]).
+        to match([:encrypt, { file: "foo.txt" }])
     end
   end
 

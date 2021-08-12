@@ -199,5 +199,5 @@ end
 
 Then("it complains that the wrong arguments were given") do
   expect(@exit_status).to be > 0
-  expect(@i_see).to match /usage: moss cat \<file\>/
+  expect(@i_see).to match /usage: moss show \<file\>/
 end
