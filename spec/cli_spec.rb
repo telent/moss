@@ -23,6 +23,7 @@ class <<cli
     command.join(":")
   end
   command :help, "show this message" do
+    "there is no help"
   end
 end
 
@@ -71,7 +72,12 @@ RSpec.describe CLI do
     it "works for rest parameters" do
       expect(cli.dispatch %w(git init --bare))
         .to eq "init:--bare"
-    end 
+    end
+
+    it "works for no parameters" do
+      expect(cli.dispatch %w(help))
+        .to eq "there is no help"
+    end
 
     it "works for flags" do
       expect(cli.dispatch ["mail", "dan", "--subject=hello dan"])
