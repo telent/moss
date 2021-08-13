@@ -1,3 +1,9 @@
+# age 1.0.0-rc.3 is required for encrypted identities. If your nixpkgs
+# is too old to have it, you can run
+# nix-env -i `nix-instantiate -E '(import <nixpkgs> {}).callPackage ./age.nix {}'`
+# to install it from this file.
+
+
 { buildGoModule
 , fetchFromGitHub }:
 buildGoModule rec {
