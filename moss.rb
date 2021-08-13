@@ -272,9 +272,9 @@ class CLI
                describe_usage(name),
                command[:doc]
       else
-        ""
+        nil
       end
-    }
+    }.compact
 
     usage_header + command_texts.join("\n")
   end
