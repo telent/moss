@@ -116,7 +116,7 @@ I don't suggest you do this, at least until moss is a bit more mature.  I am
 only writing this down because I figured out how to
 
     cd $HOME/.password-store
-    for i in `find * -name \*.gpg`   ;do ( gpg -d $i | ~/src/moss/moss.rb add "${i%.*}" );done
+    for i in `find * -name \*.gpg`   ;do ( gpg -d $i | moss add "${i%.*}" );done
 
 ## Security considerations
 
@@ -160,6 +160,12 @@ security requirements, look elsewhere.
 * if you have any of: insecure buggy virtual keyboards, keystroke
   loggers, cameras pointing at your keyboard, virtual hosts with
   compromised hypervisors, then moss won't help you
+
+* the first time an encrypted secret is needed (when writing a secet),
+  it is decrypted into memory and retained for the lifetime of the
+  process. If the app is paged out, maybe that data gets written to
+  swap.  This is so that `moss rebuild` prompts only once for the
+  passphrase instead of once per secet
 
 * `pass edit` uses Ruby's Tempfile class to write a temporary
   plaintext file containing the secret. According to the Ruby

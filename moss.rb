@@ -113,12 +113,24 @@ class Moss
     end
   end
 
+  def identity
+    unless @identity
+      @identity = encrypted?(identity_file) ?
+                    capture_output([AGE, "-d", identity_file]) :
+                    identity_file.read
+    end
+    @identity
+  end
+
+
   def read_secret(name)
     pathname = store.join("#{name}.age")
     File.exist?(pathname) or raise MossError, "Can't open non-existent file #{pathname}"
-    capture_output([AGE,
-                    "-i", identity_file,
-                    "-d", pathname])
+    IO.popen([AGE, "-i", "-", "-d", pathname.to_s], "r+") do |f|
+      f.write(identity)
+      f.close_write
+      f.read
+    end
   end
 
   def remove_secret(name)
