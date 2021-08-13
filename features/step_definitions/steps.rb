@@ -3,9 +3,10 @@ MOSS="./moss.rb"
 require 'tmpdir'
 require 'fileutils'
 
-def shell(s)
+def shell(s, permit_failure: false)
   output = IO.popen(["bash", "-c", s], "r", 2 => 1) do |f| f.read end
-  $?.exitstatus.zero? or raise "#{$?} : #{@i_see}"
+  (permit_failure || $?.exitstatus.zero?) or
+    raise "#{$?} : #{@i_see}"
   output
 end
 
@@ -51,6 +52,17 @@ end
 When("I store a secret for {string} with content {string}") do |name, content|
   @stored_secret_name = name
   shell "echo -n #{content} | #{MOSS} insert #{name.inspect}"
+end
+
+When("I force store a secret for {string} with content {string}") do |name, content|
+  @stored_secret_name = name
+  shell "echo -n #{content} | #{MOSS} insert #{name.inspect} --force"
+end
+
+Then("I cannot store a secret for {string} with content {string}") do |name, content|
+  @stored_secret_name = name
+  shell "echo -n #{content} | #{MOSS} insert #{name.inspect}", permit_failure: true
+  warn $?
 end
 
 Then("I see a {int} character string") do |len|

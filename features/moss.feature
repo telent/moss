@@ -17,6 +17,18 @@ Feature: command-line password management
     When I generate a secret for "home/fastmail" with length 12
     And "home/fastmail.age" plaintext matches ^[a-zA-Z0-9]{12}$
 
+  Scenario: it doesn't overwrite secrets without asking
+    Given I am using a temporary password store
+    When I store a secret for "home/ebay" with content "first"
+    Then I cannot store a secret for "home/ebay" with content "second"
+    And "home/ebay.age" plaintext is "first"
+
+  Scenario: it overwrites secrets when forced
+    Given I am using a temporary password store
+    When I store a secret for "home/ebay" with content "first"
+    And I force store a secret for "home/ebay" with content "second"
+    Then "home/ebay.age" plaintext is "second"
+
   Scenario: I can view a secret
     Given I am using the example password store
     When I view the secret "home/ebay"
@@ -118,7 +130,7 @@ Feature: command-line password management
 
     When I run "moss kxdcjghlsdkjfhgslkdjg"
     Then  I see the string "unrecognised command. See \"moss help\""
-    
+
   Scenario: argument checking
     When I run "moss show"
     Then it shows a usage message for "show"

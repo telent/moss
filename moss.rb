@@ -94,9 +94,9 @@ class Moss
       raise MossError, "Can't find .recipients for #{name}"
   end
 
-  def write_secret(name, content, force: false)
+  def write_secret(name, content, overwrite: false)
     pathname = store.join("#{name}.age")
-    if  pathname.exist? && !force
+    if  pathname.exist? && !overwrite
       raise MossError,"#{pathname.to_s} exists, use --force to overwrite"
     end
     pathname.dirname.mkpath
@@ -266,15 +266,15 @@ def cli
       "Store and retrieve encrypted secrets\n\n" +
         "Usage: moss [command] [parameters]...\n\n"
     end
-    command :generate, "generate a random secret" do |filename:, length:|
+    command :generate, "generate a random secret" do |filename:, length:, force: false|
       secret = random_alnum(length.to_i)
       print secret
-      MOSS.write_secret(filename, secret)
+      MOSS.write_secret(filename, secret, overwrite: force)
     end
 
-    command :add, "add a secret to the store" do |filename:, force: false|
+    command :add, "add a secret to the store (reads from standard input)" do |filename:, force: false|
       secret = $stdin.read
-      MOSS.write_secret(filename, secret)
+      MOSS.write_secret(filename, secret, overwrite: force)
     end
     link :insert => :add
 
@@ -301,7 +301,7 @@ def cli
         if Kernel.system(ENV["EDITOR"], f.path)
           f.rewind
           secret = f.read
-          MOSS.write_secret(file, secret)
+          MOSS.write_secret(file, secret, overwrite: true)
         else
           raise MossError, $CHILD_STATUS.to_s
         end

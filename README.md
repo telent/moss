@@ -184,6 +184,5 @@ security requirements, look elsewhere.
 
 * remove secrets
 * copy to clipboard
-* check before overwriting secrets that exist already
 * support re-encrypting a subtree when recipients change
 * warn or fail if iffy store permissions?
