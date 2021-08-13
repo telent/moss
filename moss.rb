@@ -235,7 +235,7 @@ class CLI
         public_send(name,  *payload)
       end
     rescue ArgumentError => e
-      raise UsageError, "usage: moss #{describe_usage(name)}"
+      raise UsageError, "usage: moss #{argv.first} #{params_to_s(method(name))}"
     end
   end
 

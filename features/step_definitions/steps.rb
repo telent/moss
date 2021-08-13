@@ -197,7 +197,7 @@ When("I run {string}") do |command|
   @exit_status = $?.exitstatus
 end
 
-Then("it complains that the wrong arguments were given") do
+Then("it shows a usage message for {string}") do |command|
   expect(@exit_status).to be > 0
-  expect(@i_see).to match /usage: moss show \<file\>/
+  expect(@i_see).to match /usage: moss #{command} \<file\>/
 end

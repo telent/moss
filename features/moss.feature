@@ -118,4 +118,7 @@ Feature: command-line password management
 
   Scenario: argument checking
     When I run "moss show"
-    Then it complains that the wrong arguments were given
+    Then it shows a usage message for "show"
+
+    When I run "moss cat"
+    Then it shows a usage message for "cat"
