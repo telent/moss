@@ -14,6 +14,7 @@ def xdg_data_home
 end
 
 class Moss
+  MossError = Class.new(RuntimeError)
   attr_reader :root
 
   def initialize(root)
@@ -47,7 +48,7 @@ class Moss
     if $CHILD_STATUS.exitstatus.zero?
       pubkey
     else
-      raise "can't get public key from identity #{filename}"
+      raise MossError, "can't get public key from identity #{filename}"
     end
   end
 
@@ -55,7 +56,7 @@ class Moss
   # named. "initialize" would be a good name if it weren't special to
   # Ruby
   def create(keyfile)
-    keyfile.exist? or raise "Cannot read identity at #{keyfile}"
+    keyfile.exist? or raise MossError, "Cannot read identity at #{keyfile}"
     recipient = pubkey_for_identity(keyfile)
     store.mkpath
     FileUtils.cp(keyfile, store.parent.join("identity"))
@@ -90,11 +91,14 @@ class Moss
   private def recipients_for_secret(name)
     pathname = store.join("#{name}.age")
     find_in_subtree(pathname.parent, ".recipients") or
-      raise "Can't find .recipients for #{name}"
+      raise MossError, "Can't find .recipients for #{name}"
   end
 
-  def write_secret(name, content)
+  def write_secret(name, content, force: false)
     pathname = store.join("#{name}.age")
+    if  pathname.exist? && !force
+      raise MossError,"#{pathname.to_s} exists, use --force to overwrite"
+    end
     pathname.dirname.mkpath
     IO.popen([AGE,
               "-a", "--recipients-file", recipients_for_secret(name).to_s,
@@ -111,7 +115,7 @@ class Moss
 
   def read_secret(name)
     pathname = store.join("#{name}.age")
-    File.exist?(pathname) or raise "Can't open non-existent file #{pathname}"
+    File.exist?(pathname) or raise MossError, "Can't open non-existent file #{pathname}"
     capture_output([AGE,
                     "-i", identity_file,
                     "-d", pathname])
@@ -135,7 +139,7 @@ class Moss
     if git_managed? || parameters.first == "init"
       Kernel.system(GIT, *parameters, { chdir: store })
     else
-      raise "not a git repo"
+      raise MossError, "not a git repo"
     end
   end
 end
@@ -225,7 +229,7 @@ class CLI
     "#{method_name} #{param_string}"
   end
 
-  UsageError = Class.new(RuntimeError)
+  UsageError = Class.new(Moss::MossError)
 
   def dispatch(argv)
     name, payload = parse_arguments(argv)
@@ -235,7 +239,7 @@ class CLI
       else
         public_send(name,  *payload)
       end
-    rescue ArgumentError => e
+    rescue ArgumentError
       raise UsageError, "usage: moss #{argv.first} #{params_to_s(method(name))}"
     end
   end
@@ -299,7 +303,7 @@ def cli
           secret = f.read
           MOSS.write_secret(file, secret)
         else
-          raise $CHILD_STATUS.to_s
+          raise MossError, $CHILD_STATUS.to_s
         end
       end
     end
@@ -323,12 +327,12 @@ def cli
   cli
 end
 
+
 if $PROGRAM_NAME == __FILE__
-  # running as a script
   begin
     File.umask(0o77)
     cli.dispatch(ARGV)
-  rescue StandardError => e
+  rescue Moss::MossError => e
     warn e.message
     exit 1
   end
