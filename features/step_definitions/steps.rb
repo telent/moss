@@ -183,6 +183,11 @@ Then("the change to {string} is committed to version control") do |name|
   expect(log).to match /new secret/
 end
 
+Then("the removal of {string} is committed to version control") do |name|
+  log = shell "cd #{ENV["MOSS_HOME"]}/store && git log --follow -- #{name}"
+  expect(log).to match /removed secret/
+end
+
 Given("I do not specify a store") do
   ENV.delete('MOSS_HOME')
 end

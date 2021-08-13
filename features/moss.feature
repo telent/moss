@@ -47,6 +47,14 @@ Feature: command-line password management
     When I delete the secret for "home/ebay"
     Then "home/ebay.age" does not exist
 
+  Scenario: I can delete a secret in a git-managed store
+    Given I am using a temporary password store
+    And the store is version-controlled
+    And there is a secret for "home/ebay"
+    When I delete the secret for "home/ebay"
+    Then "home/ebay.age" does not exist
+    And the removal of "home/ebay.age" is committed to version control
+
   Scenario: I can search for a secret
     Given I am using the example password store
     When I search for "mail"

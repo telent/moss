@@ -125,6 +125,12 @@ class Moss
     pathname = store.join("#{name}.age")
     File.exist?(pathname) or raise MossError, "Can't remove non-existent file #{pathname}"
     pathname.delete
+     if git_managed?
+       Kernel.system(GIT, "rm", pathname.relative_path_from(store).to_s,
+                     {chdir: MOSS.store})
+       Kernel.system(GIT, "commit", "-m", "removed secret",
+                     {chdir: MOSS.store})
+     end
   end
 
   def rebuild_store(verbose:)
