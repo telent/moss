@@ -10,6 +10,7 @@ install: default
 	 -e 's@^AGE=.*$$@AGE="$(AGE)"@' \
 	 -e 's@^AGE_KEYGEN=.*$$@AGE_KEYGEN="$(AGE_KEYGEN)"@' \
 	 -e 's@^GIT=.*$$@GIT="$(GIT)"@'
+	chmod a+rx $(prefix)/bin/moss
 
 gemset.nix: Gemfile
 	nix-shell -p bundler -p bundix --run "bundle lock && bundix"
