@@ -168,19 +168,20 @@ class CLI
 
     def link(ends)
       dest, src = ends.first
-      @@commands[dest] = { alias: src }
+      @@commands[dest] = { name: @@commands[src][:name] }
     end
   end
 
   def parse_arguments(argv)
     name = argv.first.to_sym
     args = argv.drop(1)
-    raise NoMethodError unless @@commands.key?(name)
 
-    command = @@commands[name]
-    if dst = command[:alias]
-      command = @@commands[dst]
+    begin
+      command = @@commands.fetch(name)
+    rescue KeyError
+      raise UsageError,"moss: unrecognised command. See \"moss help\""
     end
+
     arg_signature = method(command[:name]).parameters
 
     return [name, []] if arg_signature.empty?
@@ -241,7 +242,7 @@ class CLI
 
   def usage
     command_texts = @@commands.map { |name, command|
-      if command[:name]
+      if command[:doc]
         format "  %-40s - %s",
                describe_usage(name),
                command[:doc]

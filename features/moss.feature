@@ -116,6 +116,9 @@ Feature: command-line password management
     And I see the string "Usage: moss \[command\] \[parameters\]"
     And I see the string "add a secret to the store"
 
+    When I run "moss kxdcjghlsdkjfhgslkdjg"
+    Then  I see the string "unrecognised command. See \"moss help\""
+    
   Scenario: argument checking
     When I run "moss show"
     Then it shows a usage message for "show"
