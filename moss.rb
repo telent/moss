@@ -164,7 +164,12 @@ end
 
 class CLI
   class << self
+    # This would be more robust with class instance variables instead
+    # of class variables as used here, because different subclasses
+    # will share this hash.
+
     @@commands = {}
+
     def command(command_name, docstring, &blk)
       define_method command_name, &blk
       @@commands[command_name] = { name: command_name, doc: docstring }
@@ -186,9 +191,19 @@ class CLI
       raise UsageError,"moss: unrecognised command. See \"moss help\""
     end
 
-    arg_signature = method(command[:name]).parameters
+    method_signature = method(command[:name]).parameters
 
-    return [name, []] if arg_signature.empty?
+    return [name, []] if method_signature.empty?
+
+    # The method we dispatch to expects either a varargs (splat)
+    # array, or a hash in which every argument is named. So if there
+    # is a method blah(peter:, paul:, mary:) and the user runs
+    # `blah jones tall --mary=contrary`, first we look for
+    # the named arguments (mary => contrary),  then we assign the remaining
+    # parameters (peter => jones, paul => tall) from the argument array
+    # in the order they appear in the method signature
+
+    # (I've never used JCL, but I was once an Amiga programmer)
 
     flags = argv.reduce({}) {|m, flag|
       key, val= flag.match(/\A--(\w+)(?:=(.+))?/)&.captures
@@ -197,7 +212,7 @@ class CLI
         m
     }
 
-    payload = arg_signature.reduce({}) { |m, (type, name)|
+    payload = method_signature.reduce({}) { |m, (type, name)|
       case type
       when :rest
         args
