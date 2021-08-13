@@ -127,6 +127,13 @@ class Moss
     pathname.delete
   end
 
+  def rebuild_store(verbose:)
+    secrets.each do |name|
+      warn name if verbose
+      write_secret(name, read_secret(name), overwrite: true)
+    end
+  end
+
   def secrets
     Dir[store.join("**/*.age")].map { |n|
       Pathname.new(n).relative_path_from(store).sub_ext("").to_s
@@ -339,6 +346,10 @@ def cli
 
     command :rm, "remove a secret" do |secret:|
       MOSS.remove_secret(secret)
+    end
+
+    command :rebuild, "re-encrypt all secrets in the store (for use e.g. after changing recipients)" do |quiet: false|
+     MOSS.rebuild_store(verbose: ! quiet)
     end
 
     command :git, "perform git operation in store" do |* git_command|

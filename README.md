@@ -179,9 +179,7 @@ security requirements, look elsewhere.
   users on your machine
 
 
-
 ## TO DO
 
 * copy to clipboard
-* support re-encrypting a subtree when recipients change
 * warn or fail if iffy store permissions?

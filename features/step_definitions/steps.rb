@@ -61,6 +61,11 @@ Then('{string} does not exist') do |path|
   expect(store_path(path)).not_to exist
 end
 
+# yes, this step is a Given and a When with different text
+Given("there is a secret for {string} with content {string}") do |name, content|
+  @stored_secret_name = name
+  shell "echo -n #{content} | #{MOSS} insert #{name.inspect}"
+end
 
 When("I store a secret for {string} with content {string}") do |name, content|
   @stored_secret_name = name
@@ -94,12 +99,19 @@ Then("{string} plaintext is {string}") do |name, expected|
   expect(plaintext).to eq expected
 end
 
-Then("I can decrypt it with key {string} to {string}") do |keyfile, expected|
-  path_name = store_path(@stored_secret_name + '.age')
+def decrypt(secret_name, keyfile)
+  path_name = store_path(secret_name + '.age')
   contents = File.read(path_name)
   expect(contents).to match /AGE ENCRYPTED FILE/
-  plaintext = shell "age -i fixtures/keys/#{keyfile} -d #{path_name.to_s.inspect}"
-  expect(plaintext).to eq expected
+  shell "age -i fixtures/keys/#{keyfile} -d #{path_name.to_s.inspect}"
+end
+
+Then("I can decrypt it with key {string} to {string}") do |keyfile, expected|
+  expect(decrypt(@stored_secret_name, keyfile)).to eq expected
+end
+
+Then("I can decrypt {string} with key {string} to {string}") do |secret_name, keyfile, expected|
+  expect(decrypt(secret_name, keyfile)).to eq expected
 end
 
 Then("I cannot decrypt it with key {string}") do |keyfile|
@@ -153,6 +165,14 @@ Given("there are recipient files in different subtrees") do |table|
     add_to_store("#{row['pathname']}/.recipients", recipients)
   end
 end
+
+When('I add a recipient for the identity {string}') do |keyfile|
+  add_to_store(".recipients",
+               store_path(".recipients").read +
+               "\n" +
+               recipient_for_identity("fixtures/keys/#{keyfile}"))
+end
+
 
 Given("the store is version-controlled") do
   shell "cd #{ENV["MOSS_HOME"]}/store && git init --initial-branch=main"
@@ -225,4 +245,8 @@ end
 Then("it shows a usage message for {string}") do |command|
   expect(@exit_status).to be > 0
   expect(@i_see).to match /usage: moss #{command} \<file\>/
+end
+
+When('I re-encrypt the store') do
+  @i_see = shell "#{MOSS} rebuild"
 end

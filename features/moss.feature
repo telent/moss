@@ -25,7 +25,7 @@ Feature: command-line password management
 
   Scenario: it overwrites secrets when forced
     Given I am using a temporary password store
-    When I store a secret for "home/ebay" with content "first"
+    And there is a secret for "home/ebay" with content "first"
     And I force store a secret for "home/ebay" with content "second"
     Then "home/ebay.age" plaintext is "second"
 
@@ -143,3 +143,11 @@ Feature: command-line password management
 
     When I run "moss cat"
     Then it shows a usage message for "cat"
+
+  Scenario: I can re-encrypt files
+    Given I am using a temporary password store
+    And there is a secret for "home/ebay" with content "horsebattery"
+    And there is a secret for "home/catfish" with content "chocolate"
+    When I add a recipient for the identity "partner.key"
+    And I re-encrypt the store
+    Then I can decrypt "home/catfish" with key "partner.key" to "chocolate"
