@@ -44,10 +44,23 @@ Given("I am using the example password store") do
   ENV["MOSS_HOME"] = "fixtures"
 end
 
+Given('there is a secret for {string}') do |name|
+  shell "#{MOSS} generate #{name} 20"
+end
+
 When("I generate a secret for {string} with length {int}") do |name,  length|
   @stored_secret_name = name
   @i_see = shell "#{MOSS} generate #{name} #{length}"
 end
+
+When("I delete the secret for {string}") do |name|
+  @i_see = shell "#{MOSS} rm #{name}"
+end
+
+Then('{string} does not exist') do |path|
+  expect(store_path(path)).not_to exist
+end
+
 
 When("I store a secret for {string} with content {string}") do |name, content|
   @stored_secret_name = name

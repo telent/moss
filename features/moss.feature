@@ -41,6 +41,12 @@ Feature: command-line password management
     And I see the string "home/yahoomail"
     And I see the string "home/ebay"
 
+  Scenario: I can delete a secret
+    Given I am using a temporary password store
+    And there is a secret for "home/ebay"
+    When I delete the secret for "home/ebay"
+    Then "home/ebay.age" does not exist
+
   Scenario: I can search for a secret
     Given I am using the example password store
     When I search for "mail"

@@ -121,6 +121,12 @@ class Moss
                     "-d", pathname])
   end
 
+  def remove_secret(name)
+    pathname = store.join("#{name}.age")
+    File.exist?(pathname) or raise MossError, "Can't remove non-existent file #{pathname}"
+    pathname.delete
+  end
+
   def secrets
     Dir[store.join("**/*.age")].map { |n|
       Pathname.new(n).relative_path_from(store).sub_ext("").to_s
@@ -329,6 +335,10 @@ def cli
 
     command :init, "create new moss repository" do |keyfile:|
       MOSS.create(Pathname.new(keyfile))
+    end
+
+    command :rm, "remove a secret" do |secret:|
+      MOSS.remove_secret(secret)
     end
 
     command :git, "perform git operation in store" do |* git_command|

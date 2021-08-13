@@ -182,7 +182,6 @@ security requirements, look elsewhere.
 
 ## TO DO
 
-* remove secrets
 * copy to clipboard
 * support re-encrypting a subtree when recipients change
 * warn or fail if iffy store permissions?
