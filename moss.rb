@@ -73,6 +73,19 @@ class Moss
     root.join("identity")
   end
 
+  def identity_stream
+    unless @identity
+      if encrypted?(identity_file)
+        @identity = Tempfile.new('id')
+        @identity.unlink
+        Kernel.system(AGE, "-d", identity_file.to_s, { 1 => @identity.fileno })
+      else
+        @identity = File.open(identity_file)
+      end
+    end
+    @identity.tap(&:rewind)
+  end
+
   def git_managed?
     store.join(".git").exist?
   end
@@ -113,23 +126,19 @@ class Moss
     end
   end
 
-  def identity
-    unless @identity
-      @identity = encrypted?(identity_file) ?
-                    capture_output([AGE, "-d", identity_file]) :
-                    identity_file.read
-    end
-    @identity
-  end
-
-
   def read_secret(name)
     pathname = store.join("#{name}.age")
-    File.exist?(pathname) or raise MossError, "Can't open non-existent file #{pathname}"
-    IO.popen([AGE, "-i", "-", "-d", pathname.to_s], "r+") do |f|
-      f.write(identity)
-      f.close_write
-      f.read
+    File.exist?(pathname) or
+      raise MossError, "Can't open non-existent file #{pathname}"
+
+    IO.pipe do |r_io, w_io|
+      pid = Kernel.spawn(AGE, "-i", "-", "-d", pathname.to_s,
+                         { 0 => identity_stream.fileno,
+                           1 => w_io.fileno
+                         })
+      w_io.close
+      Process.waitpid(pid)
+      r_io.read
     end
   end
 

@@ -161,12 +161,6 @@ security requirements, look elsewhere.
   loggers, cameras pointing at your keyboard, virtual hosts with
   compromised hypervisors, then moss won't help you
 
-* the first time an encrypted secret is needed (when writing a secet),
-  it is decrypted into memory and retained for the lifetime of the
-  process. If the app is paged out, maybe that data gets written to
-  swap.  This is so that `moss rebuild` prompts only once for the
-  passphrase instead of once per secet
-
 * `pass edit` uses Ruby's Tempfile class to write a temporary
   plaintext file containing the secret. According to the Ruby
   documentation the "filename picking method is both thread-safe and
@@ -179,6 +173,12 @@ security requirements, look elsewhere.
   subprocess. Care has been taken to ensure it uses arrays instead
   of interpolating values into strings which may give rise to shell
   shell injection attacks
+
+* the first time an encrypted identity is needed (i.e when reading a
+  secret), we create a temporary file using Tempfile, and unlink it
+  before running age to decrypt the secret into it.  This is so that
+  `moss rebuild` prompts only once for the passphrase instead of once
+  per secret. moss does not read the decrypted file itself.
 
 * reasonable care has been taken to set appropriate file permissions
   on keys and secrets, so you should be good against other non-root
