@@ -369,6 +369,7 @@ def cli
 
     command :init, "create new moss repository" do |keyfile:|
       MOSS.create(Pathname.new(keyfile))
+      puts JSON.generate(MOSS.config)
     end
 
     command :rm, "remove a secret" do |secret:|
